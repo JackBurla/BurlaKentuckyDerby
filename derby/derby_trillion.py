@@ -5,23 +5,27 @@ Run 1,000,000,000,000 (1 trillion) Kentucky Derby race simulations on Burla.
 
 Strategy
 --------
-- 5,000 Burla workers x 200,000,000 sims each = 1,000,000,000,000 total
-- Each worker processes 200M sims in chunks of 500,000 (400 chunks/worker)
+- 50,000 Burla workers x 20,000,000 sims each = 1,000,000,000,000 total.
+- Each worker processes 20M sims in chunks of 100,000 (200 chunks/worker).
 - Fully vectorized NumPy: Gumbel-max trick replaces the per-sim Python loop
-  used in the 1M version — no pure-Python iteration over individual races.
+  used in the 1M version.
+- Single `remote_parallel_map` call with all 50,000 inputs, the idiomatic
+  Burla pattern (per the burla-agent-starter-kit). Streamed via
+  `generator=True` so we aggregate counts as workers finish, persisting a
+  partial snapshot every PERSIST_EVERY workers. If the run is killed, the
+  partial snapshot is the real data so far.
+- NO local fallback: if Burla cannot run the work, fail loudly so the
+  operator can fix the cluster.
 
 The Gumbel-max trick
 --------------------
 To sample k items without replacement from categorical(softmax(logits)):
   keys = logits + Gumbel(0, 1) noise
   order = argsort(-keys)[:k]
-This is algebraically equivalent to the rejection-sampling version but is
-vectorizable across an entire batch in one matrix operation.
 
 Inputs
 ------
-Same log_probs as the 1M run: log(softmax((final_score - mean) / 5.0))
-so results are directly comparable — just 1,000,000x more samples.
+Same log_probs as the 1M run: log(softmax((final_score - mean) / 5.0)).
 """
 
 import sys
@@ -29,6 +33,7 @@ import os
 import json
 import time
 import math
+import traceback
 import numpy as np
 
 if hasattr(sys.stdout, "reconfigure"):
@@ -38,8 +43,6 @@ DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 os.makedirs(DATA_DIR, exist_ok=True)
 
 # ── Horse data (canvas scores = final_score from compute_final_scores) ───────
-# Order matches the scored_df sort (descending final_score) which is also the
-# order the Monte Carlo position-counts are stored in.
 HORSES = [
     {"post": 16, "name": "Further Ado",     "odds": "6.5-1",  "beyer": 106,
      "dosage": 2.08,  "style": "Press", "trainerDW": 1, "jockeyDW": 3,
@@ -103,24 +106,31 @@ HORSES = [
      "score":  9.9,   "impliedPct":  3.2},
 ]
 
-NOISE_SIGMA     = 1.8           # same as derby_montecarlo.py
+NOISE_SIGMA     = 1.8
 
 # ── Scale settings ────────────────────────────────────────────────────────
-# 50,000 workers × 20,000,000 sims each = 1,000,000,000,000 (1 trillion).
-# Each worker finishes in ~10–20 seconds (well under Burla's function timeout).
-# max_parallelism=500 keeps concurrent vCPUs at 500, safely under the GCP
-# CPUS_PER_VM_FAMILY quota of 2,081. Workers queue and cycle through in
-# ~100 rounds of 500 concurrent workers → wall time ~15–30 minutes.
-N_WORKERS       = 50_000        # total Burla workers dispatched
-SIMS_PER_WORKER = 20_000_000    # 20M per worker → ~10–20s per worker
-CHUNK_SIZE      = 100_000       # 100K per chunk (200 chunks/worker), ~16MB RAM
+N_WORKERS       = 50_000        # 50,000 workers × 20M sims = 1T total
+SIMS_PER_WORKER = 20_000_000
+CHUNK_SIZE      = 100_000
 TOTAL_SIMS      = N_WORKERS * SIMS_PER_WORKER  # 1,000,000,000,000
+
+# Burla dispatch settings (idiomatic per burla-agent-starter-kit Recipe #2:
+# pass all inputs in one call). Generator mode lets us aggregate counts as
+# workers complete and persist progress incrementally.
+MAX_PARALLELISM = 2_081         # full GCP CPUS_PER_VM_FAMILY quota
+FUNC_CPU        = 1             # 1 vCPU per worker → up to 2,081 concurrent
+FUNC_RAM        = 2             # 2GB is plenty for 100K x 20-horse arrays
+GROW_CLUSTER    = False         # cluster is pre-provisioned at 65 × 32vCPU
+                                 # = 2,080 vCPU which is *exactly* the GCP
+                                 # CPUS_PER_VM_FAMILY quota of 2,081.
+                                 # grow=True asks for MORE, blowing the
+                                 # quota. Don't grow; queue on existing.
+PERSIST_EVERY   = 500           # write a partial snapshot every N workers
 
 
 def _compute_log_probs(horses):
     """Reproduce the exact log_probs used in derby_montecarlo.py."""
     scores = np.array([h["score"] for h in horses], dtype=np.float64)
-    # mirror: exp_s = np.exp((final_score - mean) / 5.0)
     exp_s = np.exp((scores - scores.mean()) / 5.0)
     win_probs = exp_s / exp_s.sum()
     return np.log(win_probs + 1e-9).tolist()
@@ -129,13 +139,8 @@ def _compute_log_probs(horses):
 def simulate_race_batch(log_probs_list: list, sims_per_worker: int,
                         chunk_size: int, seed: int) -> dict:
     """
-    Run sims_per_worker races on one Burla worker.
-
-    Fully vectorized: no Python loop per individual race.
-    Uses the Gumbel-max trick for categorical sampling without replacement.
-
-    Burla unpacks args as positional arguments so the signature must match
-    the tuple elements exactly.
+    Run sims_per_worker races on one Burla worker. Fully vectorized via the
+    Gumbel-max trick.
     """
     import subprocess, sys as _sys
     try:
@@ -154,26 +159,21 @@ def simulate_race_batch(log_probs_list: list, sims_per_worker: int,
     n_full_chunks, remainder = divmod(sims_per_worker, chunk_size)
 
     def _process_chunk(size: int) -> None:
-        # Step 1: add Gaussian noise in log-prob space (same as 1M version)
         noise = rng.standard_normal((size, n_horses)) * NOISE_SIGMA
-        noisy = log_probs + noise   # (size, n_horses)
+        noisy = log_probs + noise
 
-        # Step 2: log-softmax for numerical stability
         row_max = noisy.max(axis=1, keepdims=True)
         log_sum_exp = np.log(np.exp(noisy - row_max).sum(axis=1, keepdims=True)) + row_max
-        log_p = noisy - log_sum_exp  # (size, n_horses)
+        log_p = noisy - log_sum_exp
 
-        # Step 3: Gumbel-max trick — add Gumbel(0,1) to get a sample ordering
         gumbel_noise = rng.gumbel(0.0, 1.0, (size, n_horses))
-        keys = log_p + gumbel_noise  # (size, n_horses)
+        keys = log_p + gumbel_noise
 
-        # Step 4: partial sort — argpartition O(n) then sort top-4 by value
-        part = np.argpartition(-keys, 4, axis=1)[:, :4]   # (size, 4) — unordered top-4
-        top_keys = -keys[np.arange(size)[:, None], part]   # flip sign for ascending sort
-        rank_order = np.argsort(top_keys, axis=1)          # sort within the 4
-        order = part[np.arange(size)[:, None], rank_order] # (size, 4) ordered 1st..4th
+        part = np.argpartition(-keys, 4, axis=1)[:, :4]
+        top_keys = -keys[np.arange(size)[:, None], part]
+        rank_order = np.argsort(top_keys, axis=1)
+        order = part[np.arange(size)[:, None], rank_order]
 
-        # Step 5: accumulate position tallies
         for pos in range(4):
             np.add.at(counts[:, pos], order[:, pos], 1)
 
@@ -186,10 +186,9 @@ def simulate_race_batch(log_probs_list: list, sims_per_worker: int,
 
 
 def kelly_fraction(win_prob: float, odds_str: str) -> float:
-    """Kelly criterion, capped at 25% of bankroll."""
     try:
         num, denom = odds_str.split("-")
-        b = float(num) / float(denom)   # net odds e.g. "6.5-1" -> b=6.5
+        b = float(num) / float(denom)
     except Exception:
         return 0.0
     p, q = win_prob, 1.0 - win_prob
@@ -197,70 +196,12 @@ def kelly_fraction(win_prob: float, odds_str: str) -> float:
     return round(max(0.0, min(k, 0.25)), 3)
 
 
-def main():
-    log_probs = _compute_log_probs(HORSES)
-    n_horses  = len(HORSES)
+def _build_snapshot(total_counts, total_sims, elapsed, n_workers_done):
+    win_pct   = (total_counts[:, 0] / max(total_sims, 1) * 100)
+    place_pct = ((total_counts[:, 0] + total_counts[:, 1]) / max(total_sims, 1) * 100)
+    show_pct  = (total_counts[:, :3].sum(axis=1) / max(total_sims, 1) * 100)
 
-    print(f"1 Trillion Simulation Kentucky Derby Model")
-    print(f"==========================================")
-    print(f"Workers   : {N_WORKERS:,}")
-    print(f"Sims/wrkr : {SIMS_PER_WORKER:,}")
-    print(f"Chunk size: {CHUNK_SIZE:,}")
-    print(f"Total sims: {TOTAL_SIMS:,}")
-    print()
-
-    args_list = [
-        (log_probs, SIMS_PER_WORKER, CHUNK_SIZE, seed)
-        for seed in range(N_WORKERS)
-    ]
-
-    t0 = time.time()
-
-    try:
-        from burla import remote_parallel_map
-        # grow=True, max_parallelism=500: provision enough VMs for 500
-        # concurrent workers (500 vCPUs, well under the 2,081 quota).
-        # 50,000 total workers queue and run in ~100 rounds of 500.
-        print(f"Dispatching {N_WORKERS:,} workers to Burla cluster...")
-        print(f"  grow=True, max_parallelism=500, func_cpu=1")
-        results = remote_parallel_map(
-            simulate_race_batch, args_list,
-            func_cpu=1, func_ram=4,
-            max_parallelism=500,
-            grow=True,
-        )
-        backend = "Burla"
-        print(f"Burla returned {len(results):,} results.")
-    except Exception as exc:
-        print(f"Burla unavailable ({exc}), falling back to local ThreadPoolExecutor...")
-        from concurrent.futures import ThreadPoolExecutor
-        # Locally, cap at a smaller run to avoid multi-hour waits
-        local_workers = min(N_WORKERS, 8)
-        local_args = [(log_probs, min(SIMS_PER_WORKER, 20_000_000), CHUNK_SIZE, seed)
-                      for seed in range(local_workers)]
-        with ThreadPoolExecutor(max_workers=os.cpu_count() or 4) as ex:
-            futures = [ex.submit(simulate_race_batch, *a) for a in local_args]
-            results = [f.result() for f in futures]
-        backend = "local"
-        print(f"Local fallback: {local_workers} workers, {local_workers * 1_000_000:,} total sims.")
-
-    elapsed = time.time() - t0
-    actual_sims = sum(r["n_sims"] for r in results)
-
-    # Aggregate counts across all workers
-    total_counts = np.zeros((n_horses, 4), dtype=np.int64)
-    for r in results:
-        arr = np.array(r["counts"], dtype=np.int64)
-        if arr.shape == total_counts.shape:
-            total_counts += arr
-
-    # Derive probabilities
-    win_pct   = (total_counts[:, 0] / actual_sims * 100)
-    place_pct = ((total_counts[:, 0] + total_counts[:, 1]) / actual_sims * 100)
-    show_pct  = (total_counts[:, :3].sum(axis=1) / actual_sims * 100)
-
-    # Build per-horse output
-    output_horses = []
+    horses = []
     for i, h in enumerate(HORSES):
         wp = round(float(win_pct[i]), 4)
         pp = round(float(place_pct[i]), 4)
@@ -273,32 +214,95 @@ def main():
             val = "FADE"
         else:
             val = "FAIR"
-        output_horses.append({**h, "winPct": wp, "placePct": pp, "showPct": sp,
-                               "value": val, "kelly": kf})
+        horses.append({**h, "winPct": wp, "placePct": pp, "showPct": sp,
+                       "value": val, "kelly": kf})
 
-    output = {
-        "total_sims":   actual_sims,
-        "elapsed_s":    round(elapsed, 2),
-        "backend":      backend,
-        "n_workers":    N_WORKERS,
-        "noise_sigma":  NOISE_SIGMA,
-        "horses":       output_horses,
+    return {
+        "total_sims":       int(total_sims),
+        "elapsed_s":        round(elapsed, 2),
+        "backend":          "Burla",
+        "n_workers":        N_WORKERS,
+        "n_workers_done":   n_workers_done,
+        "noise_sigma":      NOISE_SIGMA,
+        "horses":           horses,
     }
 
-    out_path = os.path.join(DATA_DIR, "trillion_results.json")
-    with open(out_path, "w", encoding="utf-8") as f:
-        json.dump(output, f, indent=2)
-    print(f"\nSaved -> {out_path}")
 
-    # Print summary table
+def main():
+    log_probs = _compute_log_probs(HORSES)
+    n_horses  = len(HORSES)
+
+    print(f"1 Trillion Simulation Kentucky Derby Model")
+    print(f"==========================================")
+    print(f"Workers       : {N_WORKERS:,}")
+    print(f"Sims/worker   : {SIMS_PER_WORKER:,}")
+    print(f"Chunk size    : {CHUNK_SIZE:,}")
+    print(f"Total sims    : {TOTAL_SIMS:,}")
+    print(f"Max parallel  : {MAX_PARALLELISM}")
+    print(f"func_cpu      : {FUNC_CPU}, func_ram: {FUNC_RAM}G")
+    print(f"Persist every : {PERSIST_EVERY:,} workers")
+    print()
+
+    args_list = [
+        (log_probs, SIMS_PER_WORKER, CHUNK_SIZE, seed)
+        for seed in range(N_WORKERS)
+    ]
+
+    out_path = os.path.join(DATA_DIR, "trillion_results.json")
+
+    total_counts = np.zeros((n_horses, 4), dtype=np.int64)
+    total_sims   = 0
+    n_done       = 0
+    t_start      = time.time()
+
+    print(f"Dispatching {N_WORKERS:,} workers in a single Burla call "
+          f"(idiomatic pattern). Streaming results...\n")
+
+    from burla import remote_parallel_map
+    stream = remote_parallel_map(
+        simulate_race_batch, args_list,
+        func_cpu=FUNC_CPU, func_ram=FUNC_RAM,
+        max_parallelism=MAX_PARALLELISM,
+        grow=GROW_CLUSTER,
+        generator=True,
+        spinner=True,
+    )
+
+    last_log = t_start
+    for r in stream:
+        arr = np.array(r["counts"], dtype=np.int64)
+        if arr.shape == total_counts.shape:
+            total_counts += arr
+            total_sims   += r["n_sims"]
+            n_done       += 1
+
+        if n_done % PERSIST_EVERY == 0 or n_done == N_WORKERS:
+            elapsed = time.time() - t_start
+            snap = _build_snapshot(total_counts, total_sims, elapsed, n_done)
+            with open(out_path, "w", encoding="utf-8") as f:
+                json.dump(snap, f, indent=2)
+            pct = total_sims / TOTAL_SIMS * 100
+            rate = total_sims / max(elapsed, 1)
+            eta_s = (TOTAL_SIMS - total_sims) / max(rate, 1)
+            print(f"  [{elapsed/60:6.1f}min] {n_done:>6,}/{N_WORKERS:,} workers, "
+                  f"{total_sims:>15,} sims ({pct:6.2f}%), "
+                  f"rate={rate/1e9:.2f}B/s, ETA {eta_s/60:.1f}min")
+            last_log = time.time()
+
+    elapsed = time.time() - t_start
+    snap = _build_snapshot(total_counts, total_sims, elapsed, n_done)
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(snap, f, indent=2)
+
+    print(f"\nSaved -> {out_path}")
     print(f"\n{'Horse':<22} {'Win%':>7} {'Place%':>8} {'Show%':>7} {'Value':>6}  Kelly")
     print("-" * 62)
-    for h in output_horses:
+    for h in snap["horses"]:
         print(f"{h['name']:<22} {h['winPct']:>7.3f}% {h['placePct']:>7.3f}% "
               f"{h['showPct']:>7.3f}%  {h['value']:>5}  {h['kelly']:.3f}")
 
-    print(f"\nDone: {actual_sims:,} simulations in {elapsed:.1f}s via {backend}")
-    return output
+    print(f"\nDone: {total_sims:,} simulations in {elapsed:.1f}s via Burla")
+    return snap
 
 
 if __name__ == "__main__":
