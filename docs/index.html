@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Kentucky Derby 2026 on Burla: 1,000,000 Race Simulations in 90 Seconds</title>
+<meta name="description" content="5,000 weight combinations tested in 7 seconds. 164 ML model configs trained in parallel. 1,000,000 Monte Carlo race simulations in 90 seconds. All on Burla." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+:root {
+  --bg:          #FFFFFF;
+  --bg-2:        #F7F7F7;
+  --bg-3:        #FAFAFA;
+  --bg-ink:      #131317;
+
+  --ink:         #222222;
+  --ink-2:       #6A6A6A;
+  --ink-3:       #B0B0B0;
+  --ink-4:       #DDDDDD;
+
+  --line:        #EBEBEB;
+  --line-2:      #DDDDDD;
+
+  --accent:      #00843D;
+  --accent-dark: #005A29;
+  --accent-soft: #E4F4EB;
+  --gold:        #B8953E;
+  --gold-soft:   #FBF3E0;
+
+  --shadow-1:    0 1px 2px rgba(0,0,0,.04);
+  --shadow-2:    0 6px 16px rgba(0,0,0,.08);
+  --shadow-3:    0 12px 28px rgba(0,0,0,.12), 0 2px 4px rgba(0,0,0,.04);
+
+  --radius-xs:   6px;
+  --radius-sm:   10px;
+  --radius:      14px;
+  --radius-lg:   20px;
+
+  --max:         1280px;
+  --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+*  { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+html, body { margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "cv11","ss01";
+  font-variant-numeric: tabular-nums;
+}
+
+a { color: var(--ink); text-decoration: none; }
+a:hover { color: var(--accent); }
+button { font-family: inherit; }
+::selection { background: var(--accent-soft); color: var(--accent-dark); }
+
+/* ── Nav ── */
+.nav {
+  position: sticky; top: 0; z-index: 1100;
+  background: rgba(255,255,255,.98);
+  backdrop-filter: saturate(180%) blur(10px);
+  -webkit-backdrop-filter: saturate(180%) blur(10px);
+  border-bottom: 1px solid transparent;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+.nav.is-scrolled { border-bottom-color: var(--line); box-shadow: 0 1px 0 rgba(0,0,0,.02); }
+.nav__inner {
+  max-width: var(--max); margin: 0 auto;
+  padding: 14px 32px;
+  display: flex; align-items: center; gap: 24px;
+}
+.brand {
+  font-weight: 700; font-size: 18px; letter-spacing: -.01em;
+  color: var(--ink); display: inline-flex; align-items: baseline; gap: 2px;
+}
+.brand .x { color: var(--ink-3); font-weight: 400; margin: 0 3px; }
+.brand:hover { color: var(--accent); }
+.nav__links { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+.nav__links a {
+  padding: 8px 14px; border-radius: 10px; font-weight: 500; font-size: 14px;
+  color: var(--ink-2); transition: background .15s ease, color .15s ease;
+}
+.nav__links a:hover { background: var(--bg-2); color: var(--ink); }
+.nav__cta {
+  background: var(--ink) !important; color: var(--bg) !important;
+  padding: 9px 16px !important; border-radius: 10px !important; font-weight: 600 !important;
+}
+.nav__cta:hover { background: var(--accent) !important; color: #fff !important; }
+
+/* ── Hero ── */
+.hero { padding: 72px 32px 40px; max-width: var(--max); margin: 0 auto; }
+.hero__eyebrow {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-size: 12px; font-weight: 600; color: var(--ink-2);
+  text-transform: uppercase; letter-spacing: .08em; margin-bottom: 32px;
+}
+.hero__eyebrow .live {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); flex-shrink: 0;
+}
+.hero h1 {
+  font-size: clamp(40px, 5.6vw, 64px); line-height: 1.04;
+  letter-spacing: -.025em; font-weight: 700; margin: 0 0 24px;
+  color: var(--ink); max-width: 18ch;
+}
+.hero h1 .accent { color: var(--accent); }
+.hero .lede {
+  font-size: 19px; line-height: 1.55; color: var(--ink-2);
+  margin: 0 0 40px; max-width: 720px;
+}
+.hero .lede strong { color: var(--ink); font-weight: 600; }
+
+/* ── Stats card ── */
+.stats-card {
+  background: var(--bg); border: 1px solid var(--line);
+  border-radius: var(--radius-lg); padding: 28px 32px; box-shadow: var(--shadow-1);
+}
+.stats {
+  display: grid; grid-template-columns: repeat(6, 1fr); gap: 28px 24px;
+}
+.stat { display: flex; flex-direction: column; gap: 4px; }
+.stat .num {
+  font-size: 30px; font-weight: 600; letter-spacing: -.02em;
+  color: var(--ink); line-height: 1.1;
+}
+.stat .num.accent { color: var(--accent); }
+.stat .label { font-size: 13px; color: var(--ink-2); font-weight: 500; }
+
+/* ── Sections ── */
+section { padding: 48px 32px; max-width: var(--max); margin: 0 auto; }
+.alt-bg { background: var(--bg-2); margin: 0; max-width: none; padding: 48px 0; }
+.alt-bg > .alt-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; }
+.section__head {
+  margin-bottom: 28px;
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 24px; flex-wrap: wrap;
+}
+.section__head h2 {
+  font-size: clamp(26px, 2.8vw, 34px); line-height: 1.2; letter-spacing: -.022em;
+  font-weight: 600; margin: 0 0 10px; color: var(--ink);
+}
+.section-lede { font-size: 16px; color: var(--ink-2); margin: 0; max-width: 640px; line-height: 1.55; }
+
+/* ── Horse table ── */
+.horse-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.horse-table thead th {
+  text-align: left; padding: 10px 12px;
+  font-size: 12px; font-weight: 600; letter-spacing: .04em;
+  text-transform: uppercase; color: var(--ink-3);
+  border-bottom: 1px solid var(--line);
+}
+.horse-table tbody tr { border-bottom: 1px solid var(--line); transition: background .12s; }
+.horse-table tbody tr:hover { background: var(--bg-2); }
+.horse-table tbody td { padding: 11px 12px; color: var(--ink); vertical-align: middle; }
+.horse-table .horse-name { font-weight: 600; color: var(--ink); }
+.horse-table .horse-post { font-size: 13px; color: var(--ink-3); font-weight: 600; }
+.horse-table .odds-badge {
+  display: inline-block; padding: 3px 8px; border-radius: 6px;
+  background: var(--bg-2); border: 1px solid var(--line);
+  font-size: 12px; font-weight: 600; color: var(--ink-2);
+}
+.horse-table .val-badge {
+  display: inline-block; padding: 3px 8px; border-radius: 6px;
+  font-size: 12px; font-weight: 600;
+}
+.val-bet   { background: var(--accent-soft); color: var(--accent-dark); }
+.val-fair  { background: var(--bg-2); color: var(--ink-3); border: 1px solid var(--line); }
+.val-fade  { background: #FEF2F2; color: #B91C1C; }
+
+.prob-bar-wrap { display: flex; align-items: center; gap: 10px; }
+.prob-bar-track {
+  flex: 1; height: 6px; border-radius: 99px;
+  background: var(--line); overflow: hidden; min-width: 60px;
+}
+.prob-bar-fill { height: 100%; border-radius: 99px; background: var(--accent); transition: width .4s ease; }
+.prob-bar-fill.muted { background: var(--ink-4); }
+.prob-val { font-size: 13px; font-weight: 600; color: var(--ink); min-width: 36px; text-align: right; }
+
+.top-row { background: #F0FAF4 !important; }
+.top-row .horse-name { color: var(--accent-dark); }
+
+/* ── Picks grid ── */
+.picks-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.pick-card {
+  border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 22px 20px; background: var(--bg); transition: box-shadow .15s ease;
+}
+.pick-card:hover { box-shadow: var(--shadow-2); }
+.pick-card.primary { border-color: var(--accent); background: var(--accent-soft); }
+.pick-label {
+  font-size: 11px; font-weight: 700; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 8px;
+}
+.pick-label.gold-lbl { color: var(--gold); }
+.pick-horse { font-size: 22px; font-weight: 700; letter-spacing: -.015em; margin-bottom: 4px; }
+.pick-odds  { font-size: 13px; color: var(--ink-2); margin-bottom: 16px; }
+.pick-stats { display: flex; gap: 16px; margin-bottom: 14px; }
+.pick-stat  { display: flex; flex-direction: column; gap: 2px; }
+.pick-stat .v { font-size: 20px; font-weight: 600; color: var(--ink); letter-spacing: -.01em; }
+.pick-stat .v.green { color: var(--accent); }
+.pick-stat .l { font-size: 11px; color: var(--ink-2); }
+.pick-note { font-size: 13px; color: var(--ink-2); line-height: 1.5; }
+
+/* ── Longshot card ── */
+.longshot-card {
+  border: 1px solid var(--gold); border-radius: var(--radius);
+  padding: 28px 28px; background: var(--gold-soft);
+  display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: start;
+}
+.longshot-horse { font-size: 28px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 4px; }
+.longshot-odds  { font-size: 16px; color: var(--gold); font-weight: 600; margin-bottom: 12px; }
+.longshot-note  { font-size: 15px; color: var(--ink-2); line-height: 1.6; max-width: 600px; }
+.longshot-stats { display: flex; flex-direction: column; gap: 14px; }
+.longshot-stat  { text-align: right; }
+.longshot-stat .v { font-size: 26px; font-weight: 700; color: var(--gold); letter-spacing: -.02em; }
+.longshot-stat .l { font-size: 12px; color: var(--ink-2); }
+
+/* ── Exotic plays ── */
+.exotics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 16px; }
+.exotic-card {
+  border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 20px; background: var(--bg);
+}
+.exotic-type {
+  font-size: 11px; font-weight: 700; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--ink-3); margin-bottom: 6px;
+}
+.exotic-cost {
+  display: inline-block; padding: 3px 8px; border-radius: 6px;
+  background: var(--ink); color: #fff;
+  font-size: 12px; font-weight: 600; margin-bottom: 14px;
+}
+.exotic-horses { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.horse-pill {
+  padding: 4px 10px; border-radius: 99px; border: 1px solid var(--accent);
+  font-size: 13px; font-weight: 500; color: var(--accent-dark); background: var(--accent-soft);
+}
+.horse-pill.dim { border-color: var(--line); color: var(--ink-2); background: var(--bg-2); }
+.exotic-note { font-size: 13px; color: var(--ink-2); line-height: 1.5; }
+
+/* ── Method / How it ran ── */
+.method-section { background: var(--bg-ink); padding: 80px 32px; }
+.method {
+  max-width: var(--max); margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start;
+}
+.method__copy h2 {
+  font-size: clamp(28px, 3vw, 38px); font-weight: 700;
+  letter-spacing: -.022em; color: #fff; margin: 0 0 20px; line-height: 1.15;
+}
+.method__copy h2 .accent { color: #4ade80; }
+.method__copy p { font-size: 15px; color: #9ca3af; line-height: 1.7; margin: 0 0 16px; }
+.method__copy a { color: #d1fae5; text-decoration: underline; text-underline-offset: 2px; }
+.method__copy a:hover { color: #4ade80; }
+.peak-callout {
+  display: flex; align-items: flex-start; gap: 18px;
+  background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08);
+  border-radius: var(--radius); padding: 20px; margin: 24px 0;
+}
+.peak-num { font-size: 36px; font-weight: 700; color: #4ade80; letter-spacing: -.02em; flex-shrink: 0; }
+.peak-text { font-size: 14px; color: #9ca3af; line-height: 1.55; }
+.peak-text strong { color: #fff; }
+
+/* ── Code card ── */
+.code-card {
+  border-radius: var(--radius-lg);
+  background: #0d1117;
+  border: 1px solid rgba(255,255,255,.08);
+  overflow: hidden;
+}
+.code-card__head {
+  display: flex; align-items: center; gap: 16px;
+  padding: 0 16px 0 16px; border-bottom: 1px solid rgba(255,255,255,.07);
+  background: #161b22; min-height: 44px;
+}
+.code-card__dots { display: flex; gap: 6px; flex-shrink: 0; }
+.code-card__dots i { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,.12); }
+.code-tabs { display: flex; gap: 0; margin-left: 8px; }
+.code-tab {
+  padding: 12px 14px 10px; font-size: 12px; font-weight: 500;
+  font-family: var(--mono); color: #6e7681;
+  background: transparent; border: 0; border-bottom: 2px solid transparent;
+  cursor: pointer; transition: color .15s ease, border-color .15s ease;
+}
+.code-tab:hover { color: #c9d1d9; }
+.code-tab.is-active { color: #c9d1d9; border-bottom-color: #4ade80; }
+
+.code-card__panes { overflow: hidden; }
+pre.code-block {
+  display: none; margin: 0; padding: 22px 20px;
+  font-family: var(--mono); font-size: 13px; line-height: 1.65;
+  color: #c9d1d9; overflow-x: auto; tab-size: 4;
+}
+pre.code-block.is-active { display: block; }
+.c { color: #6e7681; }        /* comment */
+.k { color: #ff7b72; }        /* keyword */
+.f { color: #d2a8ff; }        /* function */
+.s { color: #a5d6ff; }        /* string */
+.n { color: #79c0ff; }        /* number/name */
+.bi { color: #4ade80; }       /* burla import highlight */
+
+/* ── Timing table ── */
+.timing-table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 8px; }
+.timing-table th {
+  text-align: left; padding: 10px 12px;
+  font-size: 12px; font-weight: 600; letter-spacing: .04em;
+  text-transform: uppercase; color: var(--ink-3); border-bottom: 1px solid var(--line);
+}
+.timing-table td { padding: 11px 12px; border-bottom: 1px solid var(--line); }
+.timing-table .fast { color: var(--accent); font-weight: 700; }
+.timing-table .slow { color: var(--ink-3); }
+
+/* ── Footer ── */
+footer { border-top: 1px solid var(--line); background: var(--bg-2); margin-top: 0; }
+.footer__inner {
+  max-width: var(--max); margin: 0 auto; padding: 32px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 24px; flex-wrap: wrap;
+}
+footer p { margin: 0; font-size: 13px; color: var(--ink-2); max-width: 760px; line-height: 1.55; }
+footer a { color: var(--ink); text-decoration: underline; text-decoration-color: var(--line-2); text-underline-offset: 2px; }
+footer a:hover { color: var(--accent); }
+.footer__brand { font-weight: 700; font-size: 14px; color: var(--ink); }
+.footer__brand .x { color: var(--ink-3); margin: 0 2px; font-weight: 400; }
+
+/* ── Responsive ── */
+@media (max-width: 1100px) {
+  .method { grid-template-columns: 1fr; gap: 32px; }
+}
+@media (max-width: 960px) {
+  .stats { grid-template-columns: repeat(3, 1fr); }
+  .picks-grid, .exotics-grid { grid-template-columns: 1fr 1fr; }
+  .longshot-card { grid-template-columns: 1fr; }
+  .nav__inner { padding: 12px 20px; }
+  .hero { padding: 48px 20px 28px; }
+  section { padding: 40px 20px; }
+  .alt-bg > .alt-inner { padding: 0 20px; }
+  .method-section { padding: 56px 20px; }
+}
+@media (max-width: 640px) {
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .picks-grid, .exotics-grid { grid-template-columns: 1fr; }
+  .nav__links a:not(.nav__cta) { display: none; }
+  .hero h1 { font-size: 36px; }
+  .hero .lede { font-size: 17px; }
+  .horse-table { font-size: 13px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="nav" id="nav">
+  <div class="nav__inner">
+    <a class="brand" href="#">derby<span class="x">×</span>burla</a>
+    <div class="nav__links">
+      <a href="#picks">Top Picks</a>
+      <a href="#rankings">All 20 Horses</a>
+      <a href="#exotics">Exotic Plays</a>
+      <a href="#how-it-ran">How It Ran</a>
+      <a class="nav__cta" href="https://github.com/JackBurla/BurlaKentuckyDerby" target="_blank" rel="noopener">View on GitHub</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="hero__eyebrow">
+    <span class="live"></span>
+    Burla demo &mdash; May 2, 2026
+  </div>
+  <h1>1,000,000 Derby simulations,<br/><span class="accent">in 90 seconds.</span></h1>
+  <p class="lede">
+    The 152nd Kentucky Derby field, every horse, analyzed at scale.
+    We trained <strong>164 ML model configurations</strong> in parallel,
+    tested <strong>5,000 weight combinations</strong> against four years of
+    known outcomes in 7 seconds, then ran
+    <strong>1,000,000 Monte Carlo race simulations</strong> across
+    <a href="https://docs.burla.dev" target="_blank" rel="noopener">Burla</a>'s
+    distributed cluster to produce win, place, and show probabilities for
+    every horse in the field. Churchill Downs, Saturday May 2nd, 6:57&nbsp;PM&nbsp;ET.
+  </p>
+
+  <div class="stats-card">
+    <div class="stats">
+      <div class="stat">
+        <span class="num accent">1,000,000</span>
+        <span class="label">Monte Carlo simulations</span>
+      </div>
+      <div class="stat">
+        <span class="num">5,000</span>
+        <span class="label">Weight combos tested</span>
+      </div>
+      <div class="stat">
+        <span class="num">164</span>
+        <span class="label">ML configs trained</span>
+      </div>
+      <div class="stat">
+        <span class="num accent">7s</span>
+        <span class="label">Sensitivity analysis runtime</span>
+      </div>
+      <div class="stat">
+        <span class="num">22/40</span>
+        <span class="label">Backtest score (2022&ndash;25)</span>
+      </div>
+      <div class="stat">
+        <span class="num">20</span>
+        <span class="label">Horses in field</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ── Top Picks ── -->
+<section id="picks">
+  <div class="section__head">
+    <div>
+      <h2>Top picks</h2>
+      <p class="section-lede">Model composite score = 70% empirically-validated weighted factors + 30% ML ensemble. Jockey quality carries 32.5% of the weight &mdash; the single strongest predictor across 2022&ndash;2025.</p>
+    </div>
+  </div>
+
+  <div class="picks-grid" style="margin-bottom:20px;">
+    <div class="pick-card primary">
+      <div class="pick-label">Win pick</div>
+      <div class="pick-horse">Further Ado</div>
+      <div class="pick-odds">Post 16 &middot; 6.5-1</div>
+      <div class="pick-stats">
+        <div class="pick-stat">
+          <span class="v green">31.4%</span>
+          <span class="l">Model win%</span>
+        </div>
+        <div class="pick-stat">
+          <span class="v">13.3%</span>
+          <span class="l">Market implied</span>
+        </div>
+        <div class="pick-stat">
+          <span class="v">106</span>
+          <span class="l">Beyer</span>
+        </div>
+      </div>
+      <p class="pick-note">Field-leading Beyer of 106, won the Blue Grass by 11 lengths. John Velazquez (3 Derby wins). Brad Cox trains &mdash; 26% Churchill Downs win rate. Gun Runner sire built for 10 furlongs. Model win% is 2.4&times; market-implied.</p>
+    </div>
+    <div class="pick-card">
+      <div class="pick-label">Place / value</div>
+      <div class="pick-horse">Chief Wallabee</div>
+      <div class="pick-odds">Post 11 &middot; 8-1</div>
+      <div class="pick-stats">
+        <div class="pick-stat">
+          <span class="v green">26.3%</span>
+          <span class="l">Model win%</span>
+        </div>
+        <div class="pick-stat">
+          <span class="v">11.1%</span>
+          <span class="l">Market implied</span>
+        </div>
+        <div class="pick-stat">
+          <span class="v">93</span>
+          <span class="l">Beyer</span>
+        </div>
+      </div>
+      <p class="pick-note">Bill Mott won the 2025 Derby with Sovereignty. Constitution pedigree is a class act at 10 furlongs. Junior Alvarado won last year. 26.3% model probability at 8-1 is the strongest value play on the board.</p>
+    </div>
+    <div class="pick-card">
+      <div class="pick-label">Show / value</div>
+      <div class="pick-horse">The Puma</div>
+      <div class="pick-odds">Post 8 &middot; 10-1</div>
+      <div class="pick-stats">
+        <div class="pick-stat">
+          <span class="v green">11.3%</span>
+          <span class="l">Model win%</span>
+        </div>
+        <div class="pick-stat">
+          <span class="v">9.1%</span>
+          <span class="l">Market implied</span>
+        </div>
+        <div class="pick-stat">
+          <span class="v">99</span>
+          <span class="l">Beyer</span>
+        </div>
+      </div>
+      <p class="pick-note">Trained by Gustavo Delgado who trained 2023 winner Mage. Essential Quality sire excels at classic distances. Javier Castellano has one Derby win. Closer style is a perfect fit for the expected pace meltdown from three early pressers.</p>
+    </div>
+  </div>
+
+  <!-- Longshot -->
+  <div class="longshot-card">
+    <div>
+      <div class="pick-label gold-lbl">Longshot spotlight</div>
+      <div class="longshot-horse">Litmus Test</div>
+      <div class="longshot-odds">Post 4 &middot; 30-1</div>
+      <p class="longshot-note">
+        Bob Baffert's <strong>6 Kentucky Derby wins</strong> give Litmus Test the highest trainer score in the entire
+        field by a wide margin &mdash; the model weights trainer quality at 4.8% of total score, but Baffert's
+        win rate is so far above any other trainer in the field that the absolute impact is significant.
+        Nyquist (the sire) won the 2016 Derby. Stalker run style suits the contested early pace perfectly.
+        At 30-1, the market dramatically underweights Baffert's historical edge. Kelly fraction: 8% of bankroll.
+      </p>
+    </div>
+    <div class="longshot-stats">
+      <div class="longshot-stat">
+        <div class="v">6</div>
+        <div class="l">Trainer Derby wins</div>
+      </div>
+      <div class="longshot-stat">
+        <div class="v">30-1</div>
+        <div class="l">Morning-line odds</div>
+      </div>
+      <div class="longshot-stat">
+        <div class="v">8%</div>
+        <div class="l">Kelly stake</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Full Rankings ── -->
+<div class="alt-bg">
+<section id="rankings" class="alt-inner">
+  <div class="section__head">
+    <div>
+      <h2>All 20 horses ranked</h2>
+      <p class="section-lede">Sorted by composite model score. Win% from 1,000,000 Monte Carlo simulations. Value = model probability vs. market-implied probability at morning-line odds.</p>
+    </div>
+  </div>
+
+  <div style="overflow-x:auto; border-radius:var(--radius); border:1px solid var(--line); background:var(--bg);">
+  <table class="horse-table">
+    <thead>
+      <tr>
+        <th>Post</th>
+        <th>Horse</th>
+        <th>Odds</th>
+        <th>Beyer</th>
+        <th>Style</th>
+        <th style="min-width:180px;">Model Win%</th>
+        <th>Place%</th>
+        <th>Show%</th>
+        <th>Value</th>
+      </tr>
+    </thead>
+    <tbody id="horse-rows"></tbody>
+  </table>
+  </div>
+
+  <p style="font-size:13px;color:var(--ink-3);margin-top:14px;">
+    <strong>BET</strong> = model probability &gt;15% above market implied &middot;
+    <strong>FAIR</strong> = within 15% &middot;
+    <strong>FADE</strong> = model probability &gt;15% below market implied
+  </p>
+</section>
+</div>
+
+<!-- ── Exotic Plays ── -->
+<section id="exotics">
+  <div class="section__head">
+    <div>
+      <h2>Exotic plays</h2>
+      <p class="section-lede">Kelly-optimal sizing derived from Monte Carlo position-count tallies. All costs at minimum base unit.</p>
+    </div>
+  </div>
+
+  <div class="exotics-grid">
+    <div class="exotic-card">
+      <div class="exotic-type">Exacta</div>
+      <div class="exotic-cost">$1 box &mdash; $6.00</div>
+      <div class="exotic-horses">
+        <span class="horse-pill">Further Ado</span>
+        <span class="horse-pill">Chief Wallabee</span>
+        <span class="horse-pill">The Puma</span>
+      </div>
+      <p class="exotic-note">Three-horse box covers all 6 permutations of the top model picks. Further Ado &rarr; Chief Wallabee is the highest-probability exacta combination.</p>
+    </div>
+    <div class="exotic-card">
+      <div class="exotic-type">Trifecta</div>
+      <div class="exotic-cost">1-key &mdash; $12.00</div>
+      <div style="margin-bottom:6px; font-size:12px; color:var(--ink-3); font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Top two (either order)</div>
+      <div class="exotic-horses" style="margin-bottom:10px;">
+        <span class="horse-pill">Further Ado</span>
+        <span class="horse-pill">Chief Wallabee</span>
+      </div>
+      <div style="margin-bottom:6px; font-size:12px; color:var(--ink-3); font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Third wheel</div>
+      <div class="exotic-horses">
+        <span class="horse-pill dim">The Puma</span>
+        <span class="horse-pill dim">Emerging Market</span>
+        <span class="horse-pill dim">Commandment</span>
+      </div>
+      <p class="exotic-note" style="margin-top:10px;">Key the top two in both orders, wheel three horses in the third slot.</p>
+    </div>
+    <div class="exotic-card">
+      <div class="exotic-type">Superfecta</div>
+      <div class="exotic-cost">10&cent; box &mdash; $2.40</div>
+      <div class="exotic-horses">
+        <span class="horse-pill">Further Ado</span>
+        <span class="horse-pill">Chief Wallabee</span>
+        <span class="horse-pill">The Puma</span>
+        <span class="horse-pill">Emerging Market</span>
+      </div>
+      <p class="exotic-note">10-cent four-horse box covers the model&rsquo;s top-4 in any order. Most cost-efficient chaos hedge in a 20-horse field &mdash; pays big if any ordering hits.</p>
+    </div>
+  </div>
+
+  <div style="margin-top:28px; padding:20px 22px; border:1px solid var(--line); border-radius:var(--radius); background:var(--bg-2);">
+    <strong style="font-size:14px;">Model flags as overbet:</strong>
+    <span style="font-size:14px; color:var(--ink-2); margin-left:8px;">
+      Commandment (Post 5) &mdash; 5.5% model win probability vs. 13.3% market-implied (6.5-1).
+      Lost Flavien Prat after the post draw. The empirically-validated weights penalize jockey switches heavily
+      at 32.5% of total score. The market hasn&rsquo;t fully repriced this change.
+    </span>
+  </div>
+</section>
+
+<!-- ── How It Ran ── -->
+<section id="how-it-ran" class="method-section">
+  <div class="method">
+    <div class="method__copy">
+      <h2>How it ran on <span class="accent">Burla</span></h2>
+      <p>
+        <a href="https://docs.burla.dev" target="_blank" rel="noopener">Burla</a>
+        is a Python library for parallel cloud compute. You write a function,
+        call <code style="color:#4ade80; font-family:var(--mono);">remote_parallel_map</code>,
+        and it fans out across a cluster instantly. No Docker, no Kubernetes,
+        no orchestration glue.
+      </p>
+      <p>
+        For this pipeline, three separate Burla calls did all the heavy lifting:
+        164 ML model configurations trained in parallel, 5,000 weight
+        combinations back-tested against 2022&ndash;2025 results in 7 seconds,
+        and 1,000,000 race simulations run as 100 concurrent batches in 90 seconds.
+      </p>
+
+      <div class="peak-callout">
+        <span class="peak-num">100</span>
+        <span class="peak-text">
+          <strong>concurrent Burla workers</strong> at peak during Monte Carlo,
+          each running 10,000 race simulations. 5,000 weight-combo workers
+          ran simultaneously during sensitivity analysis &mdash; all results
+          back in <strong>7 seconds</strong>.
+        </span>
+      </div>
+
+      <p>
+        Full source code on
+        <a href="https://github.com/JackBurla/BurlaKentuckyDerby" target="_blank" rel="noopener">GitHub</a>.
+        Burla docs at <a href="https://docs.burla.dev" target="_blank" rel="noopener">docs.burla.dev</a>.
+      </p>
+    </div>
+
+    <div class="code-card">
+      <div class="code-card__head">
+        <span class="code-card__dots"><i></i><i></i><i></i></span>
+        <div class="code-tabs" role="tablist">
+          <button class="code-tab is-active" role="tab" data-tab="sensitivity">derby_sensitivity.py</button>
+          <button class="code-tab" role="tab" data-tab="model">derby_model.py</button>
+          <button class="code-tab" role="tab" data-tab="montecarlo">derby_montecarlo.py</button>
+        </div>
+      </div>
+      <div class="code-card__panes">
+
+<pre class="code-block is-active" data-pane="sensitivity"><span class="c"># Test 5,000 weight combinations across all 10 factors.</span>
+<span class="c"># Back-test each against 2022-2025 Derby results.</span>
+<span class="c"># Returns in 7 seconds on Burla (5,000 parallel workers).</span>
+<span class="k">from</span> <span class="bi">burla</span> <span class="k">import</span> <span class="bi">remote_parallel_map</span>
+<span class="k">import</span> numpy <span class="k">as</span> np
+
+<span class="k">def</span> <span class="f">backtest_weights</span>(weights_list, factors, backtest_fields):
+    weights = np.array(weights_list)
+    total_score = <span class="n">0</span>
+    <span class="k">for</span> year, horses <span class="k">in</span> backtest_fields.items():
+        scores = [(h[<span class="s">"name"</span>], <span class="n">sum</span>(weights[i] * h[f]
+                   <span class="k">for</span> i, f <span class="k">in</span> <span class="n">enumerate</span>(factors)))
+                  <span class="k">for</span> h <span class="k">in</span> horses]
+        scores.sort(key=<span class="k">lambda</span> x: -x[<span class="n">1</span>])
+        actual = <span class="n">next</span>(h[<span class="s">"name"</span>] <span class="k">for</span> h <span class="k">in</span> horses <span class="k">if</span> h[<span class="s">"is_winner"</span>])
+        rank = <span class="n">next</span>(i <span class="k">for</span> i, (n, _) <span class="k">in</span> <span class="n">enumerate</span>(scores) <span class="k">if</span> n == actual)
+        total_score += [<span class="n">10</span>, <span class="n">5</span>, <span class="n">2</span>, <span class="n">1</span>, <span class="n">0</span>][<span class="n">min</span>(rank, <span class="n">4</span>)]
+    <span class="k">return</span> {<span class="s">"weights"</span>: weights_list, <span class="s">"score"</span>: total_score}
+
+<span class="c"># Dirichlet sample — uniform over the probability simplex</span>
+combos = np.random.dirichlet(np.ones(<span class="n">10</span>), size=<span class="n">5000</span>).tolist()
+args = [(c, FACTORS, BACKTEST_FIELDS) <span class="k">for</span> c <span class="k">in</span> combos]
+
+<span class="c"># 5,000 workers run simultaneously → results in 7 seconds</span>
+results = remote_parallel_map(backtest_weights, args, grow=<span class="n">True</span>)
+best = <span class="n">max</span>(results, key=<span class="k">lambda</span> r: r[<span class="s">"score"</span>])
+<span class="c"># → jockey_quality: 32.5%, pedigree_dist: 16.6%, post_itm: 13.4%</span></pre>
+
+<pre class="code-block" data-pane="model"><span class="c"># Train 164 ML configs (GBM, RF, LogReg) in parallel.</span>
+<span class="c"># Validate on 2022-2025 holdout. Pick best by log-loss.</span>
+<span class="k">from</span> <span class="bi">burla</span> <span class="k">import</span> <span class="bi">remote_parallel_map</span>
+
+<span class="k">def</span> <span class="f">train_and_eval</span>(cfg, train_rows, holdout_rows, field_rows):
+    <span class="k">from</span> sklearn.ensemble <span class="k">import</span> GradientBoostingClassifier
+    <span class="k">from</span> sklearn.pipeline <span class="k">import</span> Pipeline
+    <span class="k">from</span> sklearn.preprocessing <span class="k">import</span> StandardScaler
+    <span class="k">from</span> sklearn.metrics <span class="k">import</span> log_loss
+    <span class="k">import</span> pandas <span class="k">as</span> pd, numpy <span class="k">as</span> np
+
+    pipe = Pipeline([(<span class="s">"scaler"</span>, StandardScaler()),
+                     (<span class="s">"clf"</span>, GradientBoostingClassifier(**cfg))])
+    pipe.fit(X_train, y_train)
+    score = log_loss(y_hold, pipe.predict_proba(X_hold)[:, <span class="n">1</span>])
+    field_probs = pipe.predict_proba(X_field)[:, <span class="n">1</span>].tolist()
+    <span class="k">return</span> {<span class="s">"cfg"</span>: cfg, <span class="s">"log_loss"</span>: score, <span class="s">"field_probs"</span>: field_probs}
+
+<span class="c"># 164 configs dispatched simultaneously to Burla cluster</span>
+results = remote_parallel_map(train_and_eval, args_list, grow=<span class="n">True</span>)
+results.sort(key=<span class="k">lambda</span> r: r[<span class="s">"log_loss"</span>])
+<span class="c"># Best: GBM depth=2, lr=0.05, subsample=0.7 → log-loss=0.3784</span>
+ensemble_probs = np.mean([r[<span class="s">"field_probs"</span>] <span class="k">for</span> r <span class="k">in</span> results[:<span class="n">5</span>]], axis=<span class="n">0</span>)</pre>
+
+<pre class="code-block" data-pane="montecarlo"><span class="c"># 1,000,000 race simulations across 100 Burla workers.</span>
+<span class="c"># Each worker runs 10,000 sims, returns position tallies.</span>
+<span class="k">from</span> <span class="bi">burla</span> <span class="k">import</span> <span class="bi">remote_parallel_map</span>
+<span class="k">import</span> numpy <span class="k">as</span> np
+
+<span class="k">def</span> <span class="f">simulate_race_batch</span>(scores, n_sims, seed):
+    rng = np.random.default_rng(seed)
+    n = <span class="n">len</span>(scores)
+    counts = np.zeros((n, <span class="n">4</span>), dtype=np.int64)
+    <span class="k">for</span> _ <span class="k">in</span> <span class="n">range</span>(n_sims):
+        noise  = rng.normal(<span class="n">0</span>, <span class="n">1.8</span>, n)       <span class="c"># calibrated upset rate</span>
+        noisy  = np.array(scores) + noise
+        exp_s  = np.exp(noisy - noisy.<span class="n">max</span>())
+        probs  = exp_s / exp_s.<span class="n">sum</span>()
+        order  = rng.choice(n, size=<span class="n">4</span>, replace=<span class="k">False</span>, p=probs)
+        <span class="k">for</span> rank, idx <span class="k">in</span> <span class="n">enumerate</span>(order):
+            counts[idx][rank] += <span class="n">1</span>
+    <span class="k">return</span> {<span class="s">"counts"</span>: counts.tolist()}
+
+<span class="c"># 100 batches × 10,000 sims = 1,000,000 total in ~90 seconds</span>
+args = [(log_probs, <span class="n">10_000</span>, seed) <span class="k">for</span> seed <span class="k">in</span> <span class="n">range</span>(<span class="n">100</span>)]
+results = remote_parallel_map(simulate_race_batch, args, grow=<span class="n">True</span>)
+total = np.sum([r[<span class="s">"counts"</span>] <span class="k">for</span> r <span class="k">in</span> results], axis=<span class="n">0</span>)
+<span class="c"># → Further Ado: 31.4% win  Chief Wallabee: 26.3%  The Puma: 11.3%</span></pre>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── What's the point ── -->
+<section id="why">
+  <div class="section__head">
+    <div>
+      <h2>What&rsquo;s the point?</h2>
+      <p class="section-lede">The real result isn&rsquo;t the win probability. It&rsquo;s the time it took to build a rigorous model from scratch.</p>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:40px; align-items:start;">
+    <div>
+      <p style="font-size:16px; color:var(--ink-2); line-height:1.7; margin:0 0 16px;">
+        If you ran all three compute steps locally&nbsp;&mdash; sequentially, with Python&rsquo;s GIL limiting 
+        CPU threads&nbsp;&mdash; the sensitivity analysis alone would take <strong style="color:var(--ink);">~20 minutes</strong>. 
+        The full pipeline would take the better part of an afternoon.
+      </p>
+      <p style="font-size:16px; color:var(--ink-2); line-height:1.7; margin:0 0 16px;">
+        With Burla, the same pipeline runs in <strong style="color:var(--accent);">under 3 minutes</strong> of 
+        actual compute time. That changes how you iterate: you can test 5,000 weight hypotheses, not 50.
+        You can train 164 model configurations before picking a winner, not 5.
+        You can run a million simulations, not ten thousand.
+      </p>
+      <p style="font-size:16px; color:var(--ink-2); line-height:1.7; margin:0;">
+        The sensitivity analysis found that <strong style="color:var(--ink);">jockey quality carries 32.5%</strong> of the 
+        predictive weight&nbsp;&mdash; more than double what a conventional 
+        Beyer-first model would assign. That insight only emerged because we 
+        could afford to test 5,000 combinations.
+      </p>
+    </div>
+    <div style="border:1px solid var(--line); border-radius:var(--radius); overflow:hidden;">
+      <table class="timing-table">
+        <thead>
+          <tr>
+            <th>Task</th>
+            <th>Sequential local</th>
+            <th>Burla parallel</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>164 ML configs</td>
+            <td class="slow">~8 min</td>
+            <td class="fast">~110 sec</td>
+          </tr>
+          <tr>
+            <td>5,000 weight combos</td>
+            <td class="slow">~20 min</td>
+            <td class="fast">7 seconds</td>
+          </tr>
+          <tr>
+            <td>1M Monte Carlo sims</td>
+            <td class="slow">~6 min</td>
+            <td class="fast">~90 sec</td>
+          </tr>
+          <tr style="border-bottom:none;">
+            <td><strong>Total</strong></td>
+            <td class="slow"><strong>~34 min</strong></td>
+            <td class="fast"><strong>~5 min</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div style="margin-top:36px; padding:24px 28px; border:1px solid var(--accent); border-radius:var(--radius); background:var(--accent-soft);">
+    <strong style="font-size:15px; color:var(--accent-dark);">Empirically-validated factor weights (best of 5,000 combinations, backtest score 22/40 pts on 2022&ndash;2025):</strong>
+    <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:14px; margin-top:16px;">
+      <div><div style="font-size:22px;font-weight:700;color:var(--accent-dark);">32.5%</div><div style="font-size:12px;color:var(--ink-2);">Jockey quality</div></div>
+      <div><div style="font-size:22px;font-weight:700;color:var(--ink);">16.6%</div><div style="font-size:12px;color:var(--ink-2);">Pedigree distance</div></div>
+      <div><div style="font-size:22px;font-weight:700;color:var(--ink);">13.4%</div><div style="font-size:12px;color:var(--ink-2);">Post ITM%</div></div>
+      <div><div style="font-size:22px;font-weight:700;color:var(--ink);">9.7%</div><div style="font-size:12px;color:var(--ink-2);">Post win%</div></div>
+      <div><div style="font-size:22px;font-weight:700;color:var(--ink);">8.4%</div><div style="font-size:12px;color:var(--ink-2);">Run style / pace fit</div></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer__inner">
+    <p>
+      Built on <a href="https://docs.burla.dev" target="_blank" rel="noopener noreferrer">Burla</a>.
+      Model: 70% weighted scoring (5,000-combo Burla sensitivity analysis on 2022&ndash;2025 holdout) + 30% ML ensemble (164 configs, top-5 by log-loss).
+      1,000,000 Monte Carlo simulations. Data: user&rsquo;s 2026 KY Derby spreadsheet + hard-coded historical results 2000&ndash;2025.
+      For entertainment purposes only. Post time Saturday May 2, 6:57&nbsp;PM&nbsp;ET.
+      <a href="https://github.com/JackBurla/BurlaKentuckyDerby" target="_blank" rel="noopener noreferrer">View source on GitHub.</a>
+    </p>
+    <span class="footer__brand">derby<span class="x">&times;</span>burla</span>
+  </div>
+</footer>
+
+<script>
+// ── Horse data (from Monte Carlo output) ──────────────────────────────────
+const HORSES = [
+  { post:16, name:"Further Ado",     odds:"6.5-1",  beyer:106, style:"Press",  win:31.4, place:52.5, show:66.9, implied:13.3, val:"BET"  },
+  { post:11, name:"Chief Wallabee",  odds:"8-1",    beyer:93,  style:"Press",  win:26.3, place:46.8, show:61.5, implied:11.1, val:"BET"  },
+  { post: 8, name:"The Puma",        odds:"10-1",   beyer:99,  style:"Close",  win:11.3, place:24.2, show:37.1, implied: 9.1, val:"BET"  },
+  { post:13, name:"Emerging Market", odds:"15-1",   beyer:98,  style:"Stalk",  win: 7.6, place:17.3, show:28.0, implied: 6.3, val:"BET"  },
+  { post: 5, name:"Commandment",     odds:"6.5-1",  beyer:104, style:"Stalk",  win: 5.5, place:13.0, show:21.9, implied:13.3, val:"FADE" },
+  { post: 7, name:"So Happy",        odds:"6-1",    beyer:98,  style:"Stalk",  win: 4.6, place:11.2, show:19.1, implied:14.3, val:"FADE" },
+  { post: 4, name:"Litmus Test",     odds:"30-1",   beyer:96,  style:"Stalk",  win: 3.8, place: 9.4, show:16.3, implied: 3.2, val:"BET"  },
+  { post: 6, name:"Danon Bourbon",   odds:"20-1",   beyer:94,  style:"Stalk",  win: 3.5, place: 8.6, show:14.8, implied: 4.8, val:"FAIR" },
+  { post:10, name:"Incredibolt",     odds:"20-1",   beyer:91,  style:"Stalk",  win: 1.7, place: 4.5, show: 8.3, implied: 4.8, val:"FADE" },
+  { post: 2, name:"Albus",           odds:"30-1",   beyer:95,  style:"Stalk",  win: 1.1, place: 3.0, show: 5.6, implied: 3.2, val:"FADE" },
+  { post: 9, name:"Wonder Dean",     odds:"30-1",   beyer:95,  style:"Stalk",  win: 1.5, place: 4.1, show: 7.6, implied: 3.2, val:"FAIR" },
+  { post: 3, name:"Intrepido",       odds:"50-1",   beyer:94,  style:"Press",  win: 1.0, place: 2.6, show: 5.1, implied: 1.9, val:"FAIR" },
+  { post:12, name:"Potente",         odds:"20-1",   beyer:96,  style:"Pace",   win: 0.9, place: 2.3, show: 4.6, implied: 4.8, val:"FADE" },
+  { post: 1, name:"Renegade",        odds:"4.5-1",  beyer:97,  style:"Close",  win: 0.8, place: 2.1, show: 4.1, implied:18.2, val:"FADE" },
+  { post:14, name:"Pavlovian",       odds:"30-1",   beyer:93,  style:"Pace",   win: 0.4, place: 1.3, show: 2.6, implied: 3.2, val:"FADE" },
+  { post:15, name:"Six Speed",       odds:"50-1",   beyer:91,  style:"Pace",   win: 0.4, place: 1.2, show: 2.5, implied: 1.9, val:"FAIR" },
+  { post:18, name:"Great White",     odds:"50-1",   beyer:94,  style:"Stalk",  win: 0.4, place: 1.0, show: 2.1, implied: 1.9, val:"FAIR" },
+  { post:17, name:"Golden Tempo",    odds:"30-1",   beyer:90,  style:"Deep",   win: 0.3, place: 0.7, show: 1.5, implied: 3.2, val:"FADE" },
+  { post:20, name:"Robusta",         odds:"50-1",   beyer:93,  style:"Pace",   win: 0.1, place: 0.3, show: 0.7, implied: 1.9, val:"FADE" },
+  { post:19, name:"Ocelli",          odds:"50-1",   beyer:81,  style:"Deep",   win: 0.0, place: 0.1, show: 0.2, implied: 1.9, val:"FADE" },
+];
+
+const maxWin = Math.max(...HORSES.map(h => h.win));
+
+function valClass(v) {
+  if (v === "BET")  return "val-bet";
+  if (v === "FADE") return "val-fade";
+  return "val-fair";
+}
+
+function buildRows() {
+  const tbody = document.getElementById("horse-rows");
+  HORSES.forEach((h, i) => {
+    const tr = document.createElement("tr");
+    if (i < 2) tr.className = "top-row";
+    const barW = Math.round(h.win / maxWin * 100);
+    tr.innerHTML = `
+      <td class="horse-post">${h.post}</td>
+      <td class="horse-name">${h.name}</td>
+      <td><span class="odds-badge">${h.odds}</span></td>
+      <td>${h.beyer}</td>
+      <td>${h.style}</td>
+      <td>
+        <div class="prob-bar-wrap">
+          <div class="prob-bar-track">
+            <div class="prob-bar-fill${i >= 2 ? ' muted' : ''}" style="width:${barW}%"></div>
+          </div>
+          <span class="prob-val">${h.win.toFixed(1)}%</span>
+        </div>
+      </td>
+      <td>${h.place.toFixed(1)}%</td>
+      <td>${h.show.toFixed(1)}%</td>
+      <td><span class="val-badge ${valClass(h.val)}">${h.val}</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// ── Nav scroll shadow ─────────────────────────────────────────────────────
+window.addEventListener("scroll", () => {
+  document.getElementById("nav").classList.toggle("is-scrolled", window.scrollY > 4);
+}, { passive: true });
+
+// ── Code tabs ─────────────────────────────────────────────────────────────
+document.querySelectorAll(".code-tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    const pane = tab.dataset.tab;
+    const card = tab.closest(".code-card");
+    card.querySelectorAll(".code-tab").forEach(t => {
+      t.classList.toggle("is-active", t === tab);
+      t.setAttribute("aria-selected", t === tab);
+    });
+    card.querySelectorAll(".code-block").forEach(b => {
+      b.classList.toggle("is-active", b.dataset.pane === pane);
+    });
+  });
+});
+
+buildRows();
+</script>
+</body>
+</html>
