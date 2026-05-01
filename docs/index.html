@@ -250,8 +250,16 @@ section { padding: 48px 32px; max-width: var(--max); margin: 0 auto; }
 }
 .primer-card .ex .accent { color: var(--accent); font-weight: 600; }
 .primer-card .ex .red    { color: #B91C1C; font-weight: 600; }
+.skeptic-section .primer-grid { grid-template-columns: repeat(2, 1fr); }
+.skeptic-card {
+  background: #FAFAF8;
+  border-color: #E5E5E0;
+}
+.skeptic-card .primer-card__label { color: var(--ink-2); letter-spacing: .07em; }
+.skeptic-card .primer-card__title { color: var(--ink); }
 @media (max-width: 960px) {
   .primer-grid { grid-template-columns: 1fr; }
+  .skeptic-section .primer-grid { grid-template-columns: 1fr; }
 }
 
 /* ── Picks grid ── */
@@ -509,11 +517,16 @@ footer a:hover { color: var(--accent); }
       <div class="primer-card__title">BET, FAIR, FADE</div>
       <p>
         Compare the model&rsquo;s win% to the market&rsquo;s implied%.
-        <span class="ex"><span class="accent">BET</span></span> if the
-        model is &gt;15% above the market (you&rsquo;re getting paid
-        too much).
-        <span class="ex"><span class="red">FADE</span></span> if it&rsquo;s
-        &gt;15% below (the market is overpaying). Otherwise FAIR.
+        <span class="ex"><span class="accent">BET</span></span> if model
+        &gt;15% above market.
+        <span class="ex"><span class="red">FADE</span></span> if &gt;15%
+        below. Otherwise FAIR.
+      </p>
+      <p style="font-size:12.5px;color:var(--ink-3);margin-top:8px;">
+        Reality check: Churchill takes <strong>~17%</strong> out of the
+        win pool before paying. To actually break even you need closer
+        to <strong>+20%</strong>, not 15%. After takeout, only the
+        biggest gaps are real edge.
       </p>
     </div>
   </div>
@@ -524,7 +537,7 @@ footer a:hover { color: var(--accent); }
   <div class="section__head">
     <div>
       <h2>Top picks</h2>
-      <p class="section-lede">The three biggest gaps between the model&rsquo;s win% and the market&rsquo;s implied% &mdash; the horses where you&rsquo;re getting the most overpay if you back them.</p>
+      <p class="section-lede">The three highest model win probabilities &mdash; and the only two (Further Ado, Chief Wallabee) with edge clean enough to clear Churchill&rsquo;s ~17% takeout. The Puma is a place/show overlay more than a win bet.</p>
     </div>
   </div>
 
@@ -591,33 +604,96 @@ footer a:hover { color: var(--accent); }
     </div>
   </div>
 
-  <!-- Longshot -->
+  <!-- Trap longshots -->
   <div class="longshot-card">
     <div>
-      <div class="pick-label gold-lbl">Longshot spotlight</div>
-      <div class="longshot-horse">Litmus Test</div>
-      <div class="longshot-odds">Post 4 &middot; 30-1</div>
+      <div class="pick-label gold-lbl">The contrarian read</div>
+      <div class="longshot-horse">Trap longshots: Litmus Test &amp; Potente</div>
+      <div class="longshot-odds">Both are Baffert horses. Both are fades.</div>
       <p class="longshot-note">
-        Bob Baffert's <strong>6 Kentucky Derby wins</strong> give Litmus Test the highest trainer score in the entire
-        field by a wide margin &mdash; the model weights trainer quality at 4.8% of total score, but Baffert's
-        win rate is so far above any other trainer in the field that the absolute impact is significant.
-        Nyquist (the sire) won the 2016 Derby. Stalker run style suits the contested early pace perfectly.
-        At 30-1, the market dramatically underweights Baffert's historical edge. Kelly fraction: 8% of bankroll.
+        Every preview is going to pitch <strong>Bob Baffert&rsquo;s 6 Derby wins</strong> as the
+        longshot story of 2026. The model says it&rsquo;s a trap. <strong>Litmus Test</strong> (30-1):
+        96 Beyer, no jockey Derby experience &mdash; trainer prestige doesn&rsquo;t overcome that. Model
+        has him at 0.86%, vs. 3.2% implied. <strong>Potente</strong> (20-1) is the other Baffert: a Pace
+        horse going head-to-head with Six Speed and Robusta on the lead, even his trainer can&rsquo;t
+        fix that. <strong>Both negative Kelly. Don&rsquo;t bet either to win.</strong>
+        The only longshot the model actually endorses is <strong>Six Speed</strong> (50-1, model 3.82%
+        vs. 2.0% implied) &mdash; and even there, on a 50-1 the absolute probabilities are so small
+        that model variance dominates. <em>Sprinkle in exotics, not a serious win bet.</em>
       </p>
     </div>
     <div class="longshot-stats">
       <div class="longshot-stat">
-        <div class="v">6</div>
-        <div class="l">Trainer Derby wins</div>
+        <div class="v">0.86%</div>
+        <div class="l">Litmus Test model win%</div>
       </div>
       <div class="longshot-stat">
-        <div class="v">30-1</div>
-        <div class="l">Morning-line odds</div>
+        <div class="v">3.7&times;</div>
+        <div class="l">Market over model (LT)</div>
       </div>
       <div class="longshot-stat">
-        <div class="v">8%</div>
-        <div class="l">Kelly stake</div>
+        <div class="v">0.5%</div>
+        <div class="l">Six Speed &frac14;-Kelly</div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Skeptic's read ── -->
+<section class="primer skeptic-section" id="skeptic">
+  <h2>Skeptic&rsquo;s read</h2>
+  <p class="primer-lede">
+    Before you fire $100 on Further Ado: the questions a sharp horseplayer
+    would ask of any model like this one, answered honestly.
+  </p>
+  <div class="primer-grid skeptic-grid">
+    <div class="primer-card skeptic-card">
+      <div class="primer-card__label">Pari-mutuel reality</div>
+      <div class="primer-card__title">Morning line &ne; closing odds</div>
+      <p>
+        The morning line is the track oddsmaker&rsquo;s <em>guess</em> at
+        where the public will bet, not the actual market. By post,
+        Renegade (4-1 ML) will likely be 7-2 or shorter; Further Ado
+        will move too. We&rsquo;re comparing the model to a
+        <em>prediction of the market</em>, not the closing tote. Real
+        edge gets evaluated at the bell.
+      </p>
+    </div>
+    <div class="primer-card skeptic-card">
+      <div class="primer-card__label">The takeout problem</div>
+      <div class="primer-card__title">Churchill keeps ~17%</div>
+      <p>
+        Churchill removes ~17% from the win pool and ~22% from exotics
+        before payouts. To break even, the model must be roughly
+        <strong>+20% above market</strong>, not +15%. After takeout,
+        only <strong>Further Ado</strong> (+15.3 net) and
+        <strong>Chief Wallabee</strong> (+13.0 net) clear cleanly. The
+        Puma and Emerging Market are washes; Six Speed is a sprinkle.
+      </p>
+    </div>
+    <div class="primer-card skeptic-card">
+      <div class="primer-card__label">The backtest is small</div>
+      <div class="primer-card__title">22/40 is in-sample, n=4</div>
+      <p>
+        That score is the <em>best of 5,000 weight combinations</em>
+        against four historical Derbies (2022&ndash;25): nailed Mage
+        (&rsquo;23) and Sovereignty (&rsquo;25) outright, partial credit
+        on Mystik Dan (&rsquo;24), miss on Rich Strike (&rsquo;22). With
+        5,000 random configs over 4 races, a high score is partly luck
+        of the search. Treat it as a sanity check, not a proven ROI.
+      </p>
+    </div>
+    <div class="primer-card skeptic-card">
+      <div class="primer-card__label">What the model doesn&rsquo;t know</div>
+      <div class="primer-card__title">Beyer alone is 1990s</div>
+      <p>
+        No pace figures (separate from speed), no trip notes, no
+        Ragozin/Thoro-Graph sheets, no recent works, no layoff days, no
+        current jockey-trainer combo strike rate, no weather, no
+        live-odds movement. Beyer + run style + dosage is a starting
+        point, not a complete card. If you have access to those, weight
+        these calls accordingly.
+      </p>
     </div>
   </div>
 </section>
@@ -628,7 +704,7 @@ footer a:hover { color: var(--accent); }
   <div class="section__head">
     <div>
       <h2>All 20 horses ranked</h2>
-      <p class="section-lede">Sorted by composite model score. Win% from 1,000,000,000,000 Monte Carlo simulations. Value = model probability vs. market-implied probability at morning-line odds.</p>
+      <p class="section-lede">Sorted by composite model score. Win% from 1,000,000,000,000 Monte Carlo simulations. <strong>Value compares model to morning line, before takeout</strong> &mdash; for real edge, see the &ldquo;Skeptic&rsquo;s read&rdquo; above. Each row has a reason box explaining the call.</p>
     </div>
   </div>
 
@@ -652,9 +728,12 @@ footer a:hover { color: var(--accent); }
   </div>
 
   <p style="font-size:13px;color:var(--ink-3);margin-top:14px;">
-    <strong>BET</strong> = model probability &gt;15% above market implied &middot;
+    <strong>BET</strong> = model &gt;15% above market &middot;
     <strong>FAIR</strong> = within 15% &middot;
-    <strong>FADE</strong> = model probability &gt;15% below market implied
+    <strong>FADE</strong> = model &gt;15% below market.
+    These thresholds <em>do not account for the ~17% Churchill win-pool takeout</em>;
+    real break-even sits closer to +20%. Treat marginal BETs (The Puma,
+    Emerging Market, Six Speed) accordingly.
   </p>
 </section>
 </div>
@@ -664,7 +743,7 @@ footer a:hover { color: var(--accent); }
   <div class="section__head">
     <div>
       <h2>Exotic plays</h2>
-      <p class="section-lede">Kelly-optimal sizing derived from Monte Carlo position-count tallies. All costs at minimum base unit.</p>
+      <p class="section-lede">Where small longshots actually live. Exotics let you bet <em>structure</em> (top-2, top-3, top-4 finish ordering) instead of trying to nail a single horse&rsquo;s win at 6.5-1. Takeout is higher (~22%) but the payouts compound when the structure hits. All costs at minimum base unit.</p>
     </div>
   </div>
 
@@ -709,11 +788,12 @@ footer a:hover { color: var(--accent); }
   </div>
 
   <div style="margin-top:28px; padding:20px 22px; border:1px solid var(--line); border-radius:var(--radius); background:var(--bg-2);">
-    <strong style="font-size:14px;">Model flags as overbet:</strong>
+    <strong style="font-size:14px;">Toss off the top of your tickets:</strong>
     <span style="font-size:14px; color:var(--ink-2); margin-left:8px;">
-      Commandment (Post 5) &mdash; 5.5% model win probability vs. 13.3% market-implied (6.5-1).
-      Lost Flavien Prat after the post draw. The empirically-validated weights penalize jockey switches heavily
-      at 32.5% of total score. The market hasn&rsquo;t fully repriced this change.
+      Commandment (Post 5, 6.5-1, 5.5% model). The public is on him for the
+      104 Beyer (second-best in the field) &mdash; but he lost Flavien Prat
+      after the post draw, and the market hasn&rsquo;t fully repriced the
+      jockey downgrade. Don&rsquo;t key him underneath; you&rsquo;ll pay for it.
     </span>
   </div>
 </section>
