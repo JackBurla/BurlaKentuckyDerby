@@ -125,7 +125,7 @@ button { font-family: inherit; }
   border-radius: var(--radius-lg); padding: 28px 32px; box-shadow: var(--shadow-1);
 }
 .stats {
-  display: grid; grid-template-columns: repeat(6, 1fr); gap: 28px 24px;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px 24px;
 }
 .stat { display: flex; flex-direction: column; gap: 4px; }
 .stat .num {
@@ -187,6 +187,72 @@ section { padding: 48px 32px; max-width: var(--max); margin: 0 auto; }
 
 .top-row { background: #F0FAF4 !important; }
 .top-row .horse-name { color: var(--accent-dark); }
+
+/* ── Reason row (under each horse) ── */
+.reason-row td {
+  padding: 0 12px 14px 12px !important;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+}
+.reason-row:hover td { background: transparent !important; }
+.reason-box {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 14px; border-radius: 8px;
+  font-size: 13px; line-height: 1.5; color: var(--ink-2);
+  border-left: 3px solid var(--ink-4);
+  background: var(--bg-2);
+}
+.reason-box.is-bet  { border-left-color: var(--accent);   background: var(--accent-soft); color: #14532D; }
+.reason-box.is-fade { border-left-color: #DC2626;          background: #FEF2F2;            color: #7F1D1D; }
+.reason-box.is-fair { border-left-color: var(--ink-3);     background: var(--bg-2);        color: var(--ink-2); }
+.reason-tag {
+  flex-shrink: 0; font-weight: 700; font-size: 11px; letter-spacing: .07em;
+  text-transform: uppercase; padding: 3px 7px; border-radius: 4px;
+  background: rgba(255,255,255,.6); color: inherit;
+}
+.reason-box.is-bet  .reason-tag { background: rgba(255,255,255,.75); color: var(--accent-dark); }
+.reason-box.is-fade .reason-tag { background: rgba(255,255,255,.75); color: #B91C1C; }
+.reason-box.is-fair .reason-tag { background: rgba(255,255,255,.75); color: var(--ink-2); }
+.reason-text { color: inherit; }
+.reason-text strong { color: inherit; font-weight: 700; }
+
+/* ── Primer (How betting works) ── */
+.primer { padding: 8px 32px 32px; max-width: var(--max); margin: 0 auto; }
+.primer h2 {
+  font-size: clamp(22px, 2vw, 26px); font-weight: 600;
+  letter-spacing: -.018em; margin: 0 0 6px; color: var(--ink);
+}
+.primer-lede { font-size: 15px; color: var(--ink-2); margin: 0 0 24px; max-width: 720px; }
+.primer-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+}
+.primer-card {
+  border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 18px 18px 16px; background: var(--bg);
+}
+.primer-card__label {
+  font-size: 11px; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 8px;
+}
+.primer-card__title {
+  font-size: 17px; font-weight: 700; letter-spacing: -.012em;
+  color: var(--ink); margin-bottom: 8px;
+}
+.primer-card p {
+  font-size: 13.5px; line-height: 1.55; color: var(--ink-2); margin: 0 0 10px;
+}
+.primer-card p:last-child { margin-bottom: 0; }
+.primer-card .ex {
+  font-family: var(--mono); font-size: 12px;
+  background: var(--bg-2); border: 1px solid var(--line);
+  border-radius: 6px; padding: 8px 10px; color: var(--ink);
+  display: inline-block;
+}
+.primer-card .ex .accent { color: var(--accent); font-weight: 600; }
+.primer-card .ex .red    { color: #B91C1C; font-weight: 600; }
+@media (max-width: 960px) {
+  .primer-grid { grid-template-columns: 1fr; }
+}
 
 /* ── Picks grid ── */
 .picks-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
@@ -337,7 +403,7 @@ footer a:hover { color: var(--accent); }
   .method { grid-template-columns: 1fr; gap: 32px; }
 }
 @media (max-width: 960px) {
-  .stats { grid-template-columns: repeat(3, 1fr); }
+  .stats { grid-template-columns: repeat(2, 1fr); }
   .picks-grid, .exotics-grid { grid-template-columns: 1fr 1fr; }
   .longshot-card { grid-template-columns: 1fr; }
   .nav__inner { padding: 12px 20px; }
@@ -376,54 +442,89 @@ footer a:hover { color: var(--accent); }
     <span class="live"></span>
     Burla demo &mdash; May 2, 2026
   </div>
-  <h1>1,000,000,000,000 Derby simulations,<br/><span class="accent">in ~18 minutes.</span></h1>
+  <h1>Where the market is wrong<br/><span class="accent">about the Derby.</span></h1>
   <p class="lede">
-    The 152nd Kentucky Derby field, every horse, analyzed at scale.
-    We trained <strong>164 ML model configurations</strong> in parallel,
-    tested <strong>5,000 weight combinations</strong> against four years of
-    known outcomes in 7 seconds, then ran
-    <strong>1,000,000,000,000 Monte Carlo race simulations</strong> across
-    <a href="https://docs.burla.dev" target="_blank" rel="noopener">Burla</a>'s
-    distributed cluster to produce win, place, and show probabilities for
-    every horse in the field. Churchill Downs, Saturday May 2nd, 6:57&nbsp;PM&nbsp;ET.
+    Twenty horses go to the gate Saturday at Churchill Downs. The
+    morning-line odds tell you what the betting market thinks each
+    horse&rsquo;s chances are. The model below tells you what the math
+    thinks. <strong>Where the model is much higher than the market, you
+    bet</strong>; where it&rsquo;s much lower, you fade. Post 6:57&nbsp;PM&nbsp;ET.
   </p>
 
   <div class="stats-card">
     <div class="stats">
       <div class="stat">
+        <span class="num accent">5</span>
+        <span class="label">Value BETs identified</span>
+      </div>
+      <div class="stat">
+        <span class="num">22/40</span>
+        <span class="label">Backtest hits (2022&ndash;25)</span>
+      </div>
+      <div class="stat">
         <span class="num accent">1,000,000,000,000</span>
         <span class="label">Monte Carlo simulations</span>
       </div>
       <div class="stat">
-        <span class="num">5,000</span>
-        <span class="label">Weight combos tested</span>
-      </div>
-      <div class="stat">
-        <span class="num">164</span>
-        <span class="label">ML configs trained</span>
-      </div>
-      <div class="stat">
-        <span class="num accent">7s</span>
-        <span class="label">Sensitivity analysis runtime</span>
-      </div>
-      <div class="stat">
-        <span class="num">22/40</span>
-        <span class="label">Backtest score (2022&ndash;25)</span>
-      </div>
-      <div class="stat">
         <span class="num">20</span>
-        <span class="label">Horses in field</span>
+        <span class="label">Horses analyzed</span>
       </div>
     </div>
   </div>
 </header>
+
+<!-- ── Primer: How Derby betting works ── -->
+<section class="primer" id="primer">
+  <h2>How Derby betting works</h2>
+  <p class="primer-lede">
+    If you&rsquo;ve never bet a horse race, here&rsquo;s the whole thing in
+    three boxes &mdash; everything below it on the page is just applying
+    these ideas to the 2026 field.
+  </p>
+  <div class="primer-grid">
+    <div class="primer-card">
+      <div class="primer-card__label">Bet types</div>
+      <div class="primer-card__title">Win, Place, Show</div>
+      <p>
+        <strong>WIN</strong> &mdash; horse finishes 1st.
+        <strong>PLACE</strong> &mdash; finishes 1st or 2nd.
+        <strong>SHOW</strong> &mdash; finishes 1st, 2nd, or 3rd.
+        Show pays the smallest, win pays the most. The table below shows
+        the model&rsquo;s probability for each.
+      </p>
+    </div>
+    <div class="primer-card">
+      <div class="primer-card__label">Reading the price</div>
+      <div class="primer-card__title">Morning-line odds</div>
+      <p>
+        Odds like <strong>6.5-1</strong> mean a $1 win bet returns $6.50 in
+        profit if the horse wins. Convert to a probability with
+        <span class="ex">1 / (6.5 + 1) = <span class="accent">13.3%</span></span> &mdash;
+        that&rsquo;s the &ldquo;market implied&rdquo; chance the bookies
+        are offering.
+      </p>
+    </div>
+    <div class="primer-card">
+      <div class="primer-card__label">Finding the edge</div>
+      <div class="primer-card__title">BET, FAIR, FADE</div>
+      <p>
+        Compare the model&rsquo;s win% to the market&rsquo;s implied%.
+        <span class="ex"><span class="accent">BET</span></span> if the
+        model is &gt;15% above the market (you&rsquo;re getting paid
+        too much).
+        <span class="ex"><span class="red">FADE</span></span> if it&rsquo;s
+        &gt;15% below (the market is overpaying). Otherwise FAIR.
+      </p>
+    </div>
+  </div>
+</section>
 
 <!-- ── Top Picks ── -->
 <section id="picks">
   <div class="section__head">
     <div>
       <h2>Top picks</h2>
-      <p class="section-lede">Model composite score = 70% empirically-validated weighted factors + 30% ML ensemble. Jockey quality carries 32.5% of the weight &mdash; the single strongest predictor across 2022&ndash;2025.</p>
+      <p class="section-lede">The three biggest gaps between the model&rsquo;s win% and the market&rsquo;s implied% &mdash; the horses where you&rsquo;re getting the most overpay if you back them.</p>
     </div>
   </div>
 
@@ -862,10 +963,74 @@ const HORSES = [
 
 const maxWin = Math.max(...HORSES.map(h => h.win));
 
+// Per-horse reason for the BET / FAIR / FADE call. Grounded in the data:
+// Beyer figure, run style, trainer/jockey Derby wins, post position,
+// model prob vs. market-implied prob.
+const REASONS = {
+  "Further Ado":
+    "Field-leading Beyer of <strong>106</strong> (7 points clear of the next horse). Brad Cox trains (26% Churchill Downs win rate); John Velazquez up (3 Derby wins). Market priced him as a co-favorite at 6.5-1, but the model says he's <strong>2.4&times; more likely to win than the morning line implies</strong>.",
+  "Chief Wallabee":
+    "Bill Mott just won the 2025 Derby with Sovereignty. Press style fits the 10-furlong distance and the inside-pace setup. The market sees a mid-tier 8-1 shot; the model has him as the <strong>second most likely winner in the field</strong> at +138% over implied.",
+  "The Puma":
+    "<strong>Closer profile</strong> is the right shape for this race &mdash; three early-pace horses (Six Speed, Robusta, Pavlovian) will burn each other up, leaving the lead for a closer. Beyer 99 is third in the field. Modest +24% edge makes him a place/show overlay more than a pure win bet.",
+  "Emerging Market":
+    "Beyer <strong>98</strong> is fourth in the field. Stalking style is versatile if the pace cracks. Slim model edge over the 15-1 morning line &mdash; small win ticket, more weight in the show pool.",
+  "Six Speed":
+    "At 50-1 the market is treating him as a complete throwaway. Model says he's <strong>1.9&times; more likely to win than the price implies</strong>. Tiny stake, big payoff if he hits &mdash; classic longshot value, not a serious win bet.",
+  "Commandment":
+    "Beyer <strong>104</strong> is the second-best in the field, which is why he's bet at 6.5-1 (co-favorite). But the model gives him only 5.6% &mdash; <strong>less than half the implied 13.3%</strong>. The market is overpaying for the speed figure alone.",
+  "So Happy":
+    "Heavily backed at 6-1 (14.3% implied), but the model has him at 4.6% &mdash; the worst gap on the board. Composite score lags the top picks. Market money chasing a name; pass.",
+  "Incredibolt":
+    "20-1 morning line (4.8% implied) with no trainer or jockey Derby pedigree to back it up and a Beyer of 91. Composite score is bottom-half of the field.",
+  "Robusta":
+    "Drew the rail-killer post <strong>20</strong> (the outside gate). Pace style needs an inside trip; from out there it's a long sprint to the first turn against three other front-runners.",
+  "Albus":
+    "30-1 looks rich for a horse with <strong>no trainer Derby wins, no jockey Derby wins</strong>, and a mid-pack 95 Beyer. Nothing in the data supports the implied 3.2%.",
+  "Intrepido":
+    "Press style gets eaten alive by the early pace duel between Six Speed, Robusta, and Pavlovian. No trainer or jockey Derby edge, and a 94 Beyer. Market is mispricing the pace dynamics.",
+  "Litmus Test":
+    "<strong>Trainer is Bob Baffert (6 Derby wins)</strong> &mdash; the longshot card above is built around that. But the model still calls FADE: 0.86% vs. 3.2% implied. The trainer edge isn't enough to overcome a 96 Beyer with no jockey Derby experience. <em>The longshot pitch is contrarian to the model.</em>",
+  "Wonder Dean":
+    "30-1 with <strong>zero trainer or jockey Derby experience</strong> and a 95 Beyer. Pure name recognition pricing &mdash; the model puts him at a quarter of the implied probability.",
+  "Renegade":
+    "<strong>Morning-line favorite at 4-1 (18.2% implied)</strong>, but he drew post <strong>1</strong> &mdash; historically the worst gate in the Derby (2 wins from 152 runnings). Closer trapped on the rail in a 20-horse field. Model heavily discounts; the market is paying for hype.",
+  "Pavlovian":
+    "Pace horse with a sub-95 Beyer in a field where two faster pace horses (Six Speed, Robusta) will outrun him to the first turn. Trainer has 2 Derby wins but no other edges.",
+  "Potente":
+    "<strong>Another Baffert horse</strong> (6 Derby wins). But pace style competes head-to-head with Six Speed and Robusta for the early lead &mdash; even with the trainer edge, the model expects him to compromise himself early.",
+  "Great White":
+    "50-1 may sound like value, but the model agrees he's a long shot &mdash; composite score is bottom-5, no trainer/jockey Derby pedigree, and the implied 2.0% is still 5.5&times; the model's number.",
+  "Danon Bourbon":
+    "20-1 (4.8% implied) is generous for a horse with bottom-quintile composite score, no Derby connections, and a Beyer of 94.",
+  "Ocelli":
+    "<strong>Lowest Beyer in the field by 9 points (81)</strong>. Deep-closer style with no jockey or trainer pedigree &mdash; quite simply the slowest horse in the race on paper.",
+  "Golden Tempo":
+    "Deep closer with the third-lowest composite score and a 90 Beyer. 30-1 is too short &mdash; the model puts him at essentially zero chance (0.03%) vs. 3.2% implied.",
+};
+
 function valClass(v) {
   if (v === "BET")  return "val-bet";
   if (v === "FADE") return "val-fade";
   return "val-fair";
+}
+
+function reasonClass(v) {
+  if (v === "BET")  return "is-bet";
+  if (v === "FADE") return "is-fade";
+  return "is-fair";
+}
+
+function reasonTagText(v, h) {
+  if (v === "BET") {
+    const mult = (h.win / h.implied);
+    return `Why BET &mdash; model is ${mult.toFixed(1)}\u00d7 the market`;
+  }
+  if (v === "FADE") {
+    const ratio = h.implied > 0 ? (h.implied / Math.max(h.win, 0.001)) : 0;
+    return `Why FADE &mdash; market is ${ratio.toFixed(1)}\u00d7 the model`;
+  }
+  return "Why FAIR &mdash; model and market agree";
 }
 
 function buildRows() {
@@ -893,6 +1058,20 @@ function buildRows() {
       <td><span class="val-badge ${valClass(h.val)}">${h.val}</span></td>
     `;
     tbody.appendChild(tr);
+
+    // Reason sub-row: a styled box explaining why BET/FAIR/FADE for this horse.
+    const reasonTr = document.createElement("tr");
+    reasonTr.className = "reason-row";
+    const reasonText = REASONS[h.name] || "No reason recorded.";
+    reasonTr.innerHTML = `
+      <td colspan="9">
+        <div class="reason-box ${reasonClass(h.val)}">
+          <span class="reason-tag">${reasonTagText(h.val, h)}</span>
+          <span class="reason-text">${reasonText}</span>
+        </div>
+      </td>
+    `;
+    tbody.appendChild(reasonTr);
   });
 }
 
