@@ -257,6 +257,63 @@ section { padding: 48px 32px; max-width: var(--max); margin: 0 auto; }
 }
 .skeptic-card .primer-card__label { color: var(--ink-2); letter-spacing: .07em; }
 .skeptic-card .primer-card__title { color: var(--ink); }
+
+/* ── Methodology audit ── */
+.audit-section { background: #1A1714; padding: 64px 32px; margin: 0; max-width: none; }
+.audit-inner { max-width: var(--max); margin: 0 auto; color: #E5E0D8; }
+.audit-eyebrow {
+  font-size: 11px; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: #DC2626; margin-bottom: 14px;
+}
+.audit-header h2 {
+  font-size: clamp(28px, 3vw, 38px); font-weight: 700;
+  letter-spacing: -.022em; line-height: 1.18; color: #FAFAF8;
+  margin: 0 0 16px; max-width: 22ch;
+}
+.audit-lede { font-size: 16px; color: #B0AAA0; line-height: 1.6; max-width: 720px; margin: 0 0 28px; }
+.audit-h3 {
+  font-size: 18px; font-weight: 700; letter-spacing: -.012em;
+  color: #FAFAF8; margin: 32px 0 12px;
+}
+.audit-body {
+  font-size: 14.5px; line-height: 1.7; color: #C9C2B6;
+  max-width: 820px; margin: 0 0 16px;
+}
+.audit-body code, .audit-list code {
+  font-family: var(--mono); font-size: 13px;
+  background: #2A2520; color: #E5E0D8;
+  padding: 1px 6px; border-radius: 4px;
+}
+.audit-body strong { color: #FAFAF8; font-weight: 700; }
+.audit-list {
+  font-size: 14.5px; line-height: 1.65; color: #C9C2B6;
+  max-width: 820px; padding-left: 22px; margin: 0 0 20px;
+}
+.audit-list li { margin-bottom: 14px; }
+.audit-list strong { color: #FAFAF8; font-weight: 700; }
+.audit-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+  margin: 22px 0 28px;
+}
+.audit-tile {
+  background: #2A2520; border: 1px solid #3A332C;
+  border-radius: var(--radius-sm); padding: 16px 14px;
+}
+.audit-tile--mid { border-color: #6A6055; background: #2F2925; }
+.audit-tile--bad { border-color: #6B2424; background: #2C1F1E; }
+.audit-tile__num {
+  font-size: 22px; font-weight: 700; letter-spacing: -.012em;
+  color: #FAFAF8; margin-bottom: 4px;
+}
+.audit-tile--bad .audit-tile__num { color: #F87171; }
+.audit-tile__lbl { font-size: 12px; color: #9C958A; line-height: 1.4; }
+@media (max-width: 960px) {
+  .audit-grid { grid-template-columns: repeat(2, 1fr); }
+  .audit-section { padding: 48px 20px; }
+}
+@media (max-width: 640px) {
+  .audit-grid { grid-template-columns: 1fr; }
+}
 @media (max-width: 960px) {
   .primer-grid { grid-template-columns: 1fr; }
   .skeptic-section .primer-grid { grid-template-columns: 1fr; }
@@ -437,6 +494,7 @@ footer a:hover { color: var(--accent); }
     <a class="brand" href="#">derby<span class="x">×</span>burla</a>
     <div class="nav__links">
       <a href="#picks">Top Picks</a>
+      <a href="#audit" style="color:#B91C1C;">Audit</a>
       <a href="#rankings">All 20 Horses</a>
       <a href="#exotics">Exotic Plays</a>
       <a href="#how-it-ran">How It Ran</a>
@@ -466,8 +524,8 @@ footer a:hover { color: var(--accent); }
         <span class="label">Value BETs identified</span>
       </div>
       <div class="stat">
-        <span class="num">22/40</span>
-        <span class="label">Backtest hits (2022&ndash;25)</span>
+        <span class="num" style="color:#B91C1C;">p=0.87</span>
+        <span class="label"><a href="#audit" style="color:inherit;text-decoration:underline;text-decoration-color:var(--line-2);text-underline-offset:2px;">Backtest fails its own null test</a></span>
       </div>
       <div class="stat">
         <span class="num accent">1,000,000,000,000</span>
@@ -672,15 +730,16 @@ footer a:hover { color: var(--accent); }
       </p>
     </div>
     <div class="primer-card skeptic-card">
-      <div class="primer-card__label">The backtest is small</div>
-      <div class="primer-card__title">22/40 is in-sample, n=4</div>
+      <div class="primer-card__label">The backtest fails its own null test</div>
+      <div class="primer-card__title">p = 0.87 against permuted labels</div>
       <p>
-        That score is the <em>best of 5,000 weight combinations</em>
-        against four historical Derbies (2022&ndash;25): nailed Mage
-        (&rsquo;23) and Sovereignty (&rsquo;25) outright, partial credit
-        on Mystik Dan (&rsquo;24), miss on Rich Strike (&rsquo;22). With
-        5,000 random configs over 4 races, a high score is partly luck
-        of the search. Treat it as a sanity check, not a proven ROI.
+        We re-ran the same 5,000-Dirichlet search on
+        <strong>2,000 random shuffles</strong> of who actually won, on
+        Burla. Under shuffled labels, the search hits the published
+        22/40 score or higher in <strong>87.4% of permutations</strong>;
+        the median null is 30/40. <strong>The headline is below the noise
+        floor of its own search procedure.</strong> Receipts:
+        <a href="#audit">Methodology audit</a> below.
       </p>
     </div>
     <div class="primer-card skeptic-card">
@@ -695,6 +754,179 @@ footer a:hover { color: var(--accent); }
         these calls accordingly.
       </p>
     </div>
+  </div>
+</section>
+
+<!-- ── Methodology audit ── -->
+<section class="audit-section" id="audit">
+  <div class="audit-inner">
+    <div class="audit-header">
+      <div class="audit-eyebrow">Methodology audit</div>
+      <h2>Where this model is fragile, and what we ran on Burla to prove it.</h2>
+      <p class="audit-lede">
+        A skeptical data scientist would tear into the pipeline behind this site.
+        Rather than wait for someone else to do it, we did it ourselves
+        &mdash; including a real permutation test on Burla &mdash; and put the
+        receipts here. The 1-trillion-sim headline doesn&rsquo;t fix bad inputs.
+      </p>
+    </div>
+
+    <h3 class="audit-h3">1. The 22/40 backtest is below its own null floor</h3>
+    <p class="audit-body">
+      The site previously trumpeted &ldquo;22/40 backtest hits, best of 5,000
+      Dirichlet-sampled weight combinations on 2022&ndash;25.&rdquo; A
+      permutation test on Burla asks the obvious question: <em>if you shuffle
+      who actually won and re-run the same 5,000-combo search, what does the
+      best score look like under random labels?</em> If the model is real,
+      shuffled labels should produce much lower scores. We ran 2,000
+      permutations, each searching 5,000 Dirichlet weight vectors, in
+      <strong>13.8 seconds</strong> across the cluster.
+    </p>
+
+    <div class="audit-grid">
+      <div class="audit-tile">
+        <div class="audit-tile__num">6/40</div>
+        <div class="audit-tile__lbl">Always pick the favorite</div>
+      </div>
+      <div class="audit-tile">
+        <div class="audit-tile__num">10/40</div>
+        <div class="audit-tile__lbl">Always pick the highest Beyer</div>
+      </div>
+      <div class="audit-tile">
+        <div class="audit-tile__num">15.3/40</div>
+        <div class="audit-tile__lbl">Random pick (closed-form expected)</div>
+      </div>
+      <div class="audit-tile audit-tile--mid">
+        <div class="audit-tile__num">22/40</div>
+        <div class="audit-tile__lbl">Published model</div>
+      </div>
+      <div class="audit-tile audit-tile--bad">
+        <div class="audit-tile__num">30/40</div>
+        <div class="audit-tile__lbl">Median null score (best of 5K, shuffled labels)</div>
+      </div>
+      <div class="audit-tile audit-tile--bad">
+        <div class="audit-tile__num">87.4%</div>
+        <div class="audit-tile__lbl">P( null score &ge; 22 ) over 2,000 permutations</div>
+      </div>
+      <div class="audit-tile audit-tile--bad">
+        <div class="audit-tile__num">40/40</div>
+        <div class="audit-tile__lbl">Max null score &mdash; search can fit ANY 4-race outcome</div>
+      </div>
+      <div class="audit-tile">
+        <div class="audit-tile__num">+7pts</div>
+        <div class="audit-tile__lbl">Real-label edge over random (22 vs 15.3)</div>
+      </div>
+    </div>
+
+    <p class="audit-body">
+      <strong>Read:</strong> the &ldquo;best of 5,000 random weight
+      vectors&rdquo; methodology has so much capacity that 22/40 is the
+      <em>13th-percentile</em> of what the same search achieves on
+      shuffled-truth runs. The published headline is consistent with pure
+      search noise. There IS a small real-label edge over a random pick
+      (+7 points), so the underlying weighted-feature framework isn&rsquo;t
+      worthless &mdash; but anyone calling 22/40 &ldquo;empirically
+      validated&rdquo; is confusing &ldquo;the maximum of a big random
+      search&rdquo; with &ldquo;a calibrated estimate.&rdquo;
+    </p>
+
+    <h3 class="audit-h3">2. Five upstream data frauds the simulation can&rsquo;t fix</h3>
+    <p class="audit-body">
+      No amount of Burla compute fixes garbage inputs. From a code review of
+      <code>derby_scraper.py</code>, <code>derby_features.py</code>,
+      <code>derby_model.py</code>, and <code>derby_sensitivity.py</code>:
+    </p>
+    <ol class="audit-list">
+      <li>
+        <strong>Beyer figures for non-winners are synthesized from finish
+        position.</strong> <code>derby_scraper.py</code> line 194:
+        <code>beyer = winner_beyer - 3 &times; (finish_pos - 1)</code>. The
+        &ldquo;historical Beyer distribution&rdquo; the model trains on is
+        invented. So is the dosage index. So when the site says &ldquo;Further
+        Ado&rsquo;s 106 Beyer leads the field,&rdquo; the comparison universe
+        was generated by arithmetic, not measurement.
+      </li>
+      <li>
+        <strong>The &ldquo;Burla scrape&rdquo; never wrote anything.</strong>
+        The script calls <code>remote_parallel_map(scrape_hrn_year, years)</code>,
+        ignores the result, and writes the hard-coded <code>FALLBACK_DATA</code>
+        DataFrame. The &ldquo;26 page-fetches in parallel via Burla bypass IP
+        blocks&rdquo; pitch is theatrical &mdash; the data is hard-coded in
+        Python.
+      </li>
+      <li>
+        <strong>The 5,000-combo sensitivity backtest runs against
+        hand-typed feature scores.</strong> <code>derby_sensitivity.py</code>
+        defines <code>BACKTEST_FIELDS</code> with literal entries like
+        <code>dict(name="Rich Strike", beyer_norm=2.7, &hellip;)</code>. These
+        values were chosen by hand, not computed by the same feature pipeline.
+        The &ldquo;best weights&rdquo; optimize against arithmetic, not data.
+        The backtest only includes 4&ndash;5 horses per year (the top
+        finishers), not the 20-horse field.
+      </li>
+      <li>
+        <strong>The ML training feature set leaks the answer.</strong>
+        <code>FEATURE_COLS</code> includes <code>implied_prob = 1 / (odds + 1)</code>.
+        Since morning-line odds embed the market&rsquo;s prediction of who
+        will win, the classifier mostly relearns the market. That&rsquo;s
+        why the &ldquo;best log-loss 0.378&rdquo; sounds impressive but isn&rsquo;t
+        meaningfully better than just betting the favorites.
+      </li>
+      <li>
+        <strong>The ML output is essentially uniform garbage.</strong>
+        From <code>model_results.json &rarr; horse_ml_probs</code>:
+        Robusta (50-1) gets <strong>10.6%</strong>, Further Ado gets 10.5%,
+        and Renegade (the actual 4-1 morning-line favorite) gets <strong>3.6%</strong>.
+        The ML &ldquo;ensemble&rdquo; isn&rsquo;t learning &mdash; an n=88
+        training set with 4 winners and a leaky implied-prob feature
+        produces near-random predictions. The published win% lives mostly in
+        the hand-tuned 70%-weighted-score component, not the ML 30%.
+      </li>
+    </ol>
+
+    <h3 class="audit-h3">3. The hand-coded &ldquo;features&rdquo; are opinions</h3>
+    <p class="audit-body">
+      <code>EXPERT_SCORES</code>, <code>PACE_FIT</code>, and
+      <code>POST_DRAW_ADJUSTMENTS</code> in <code>derby_features.py</code> are
+      hard-coded Python dicts dressed as features. The comments claim
+      &ldquo;aggregated from Aces &amp; Races, CBS, Yahoo, SportsLine&rdquo;
+      with no aggregation code, no source URLs, no timestamp. They&rsquo;re
+      one person&rsquo;s priors typed into a constant.
+    </p>
+
+    <h3 class="audit-h3">4. The 1-trillion-sim count is honest, but doesn&rsquo;t add information</h3>
+    <p class="audit-body">
+      The Monte Carlo really did run 50,000 workers x 20,000,000 sims = 1T
+      total in 18.3 minutes on Burla. That&rsquo;s legit cloud compute.
+      But the Monte Carlo just adds Gumbel noise to a fixed score vector and
+      counts orderings &mdash; <strong>variance reduction past about 100,000
+      sims is irrelevant</strong> because the inputs (those scores) come from
+      the broken pipeline above. 1 trillion samples gets you 6-decimal
+      precision on a quantity whose true value is unknowable.
+    </p>
+
+    <h3 class="audit-h3">What this site is and isn&rsquo;t</h3>
+    <p class="audit-body">
+      <strong>What we trust:</strong> the 2026 horse stats are face-valid
+      (Beyer, run style, jockey/trainer Derby wins, sire pedigree) and the
+      relative ranking &mdash; Further Ado &gt; Chief Wallabee &gt; The Puma
+      &gt; rest &mdash; tracks how a thoughtful handicapper would order
+      these horses on the same inputs. The 70/30 weighted blend is mostly a
+      reasonable hand-tuned scorecard. As a ranking, it&rsquo;s a defensible
+      first pass.
+      <br/><br/>
+      <strong>What we don&rsquo;t trust:</strong> the specific
+      probabilities (31.26%, 26.43%, &hellip;) to four decimals as if they
+      were calibrated; the &ldquo;BET / FAIR / FADE&rdquo; classifications
+      that compare those probabilities to morning-line implied%; the
+      &ldquo;empirically validated weights&rdquo; framing; the implication
+      that more compute equals more truth. <strong>This is a ranked
+      handicapper&rsquo;s sheet with a Burla flex on top, not a published
+      Bayesian probability model.</strong> Treat it accordingly. The
+      receipts (audit script, raw permutation results) are in the repo:
+      <code>derby/derby_audit.py</code>,
+      <code>derby/data/audit_results.json</code>.
+    </p>
   </div>
 </section>
 
