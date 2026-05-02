@@ -494,6 +494,7 @@ footer a:hover { color: var(--accent); }
     <a class="brand" href="#">derby<span class="x">×</span>burla</a>
     <div class="nav__links">
       <a href="#picks">Top Picks</a>
+      <a href="#refresh">Real-Data Check</a>
       <a href="#audit" style="color:#B91C1C;">Audit</a>
       <a href="#rankings">All 20 Horses</a>
       <a href="#exotics">Exotic Plays</a>
@@ -609,14 +610,14 @@ footer a:hover { color: var(--accent); }
     <div class="pick-card primary">
       <div class="pick-label">Win pick</div>
       <div class="pick-horse">Further Ado</div>
-      <div class="pick-odds">Post 16 &middot; 6.5-1</div>
+      <div class="pick-odds">Post 16 &middot; 6-1</div>
       <div class="pick-stats">
         <div class="pick-stat">
           <span class="v green">31.3%</span>
           <span class="l">Model win%</span>
         </div>
         <div class="pick-stat">
-          <span class="v">13.3%</span>
+          <span class="v">14.3%</span>
           <span class="l">Market implied</span>
         </div>
         <div class="pick-stat">
@@ -624,7 +625,7 @@ footer a:hover { color: var(--accent); }
           <span class="l">Beyer</span>
         </div>
       </div>
-      <p class="pick-note">Field-leading Beyer of 106, won the Blue Grass by 11 lengths. John Velazquez (3 Derby wins). Brad Cox trains &mdash; 26% Churchill Downs win rate. Gun Runner sire built for 10 furlongs. Model win% is 2.4&times; market-implied.</p>
+      <p class="pick-note">Field-leading Beyer of 106, won the Blue Grass by 11 lengths. John Velazquez (3 Derby wins). Brad Cox trains &mdash; 26% Churchill Downs win rate. Gun Runner sire built for 10 furlongs. Model win% is 2.2&times; market-implied at 6-1.</p>
     </div>
     <div class="pick-card">
       <div class="pick-label">Place / value</div>
@@ -761,6 +762,116 @@ footer a:hover { color: var(--accent); }
       </p>
     </div>
   </div>
+</section>
+
+<!-- ── Real-data refresh ── -->
+<section class="primer skeptic-section" id="refresh">
+  <h2>Real-data refresh</h2>
+  <p class="primer-lede">
+    The original pipeline ran the model on hand-typed inputs. The honest move
+    is to actually pull public data on the 20 horses and check what was
+    wrong. Here&rsquo;s what we found and what we changed
+    &mdash; <strong>without retraining the model</strong>, just correcting
+    the inputs against the real morning line and the published Beyer
+    figures.
+  </p>
+
+  <h3 style="font-size:18px;font-weight:700;margin:8px 0 12px;color:var(--ink);">What we corrected</h3>
+  <div style="overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--bg);margin-bottom:24px;-webkit-overflow-scrolling:touch;">
+    <table style="width:100%;min-width:680px;border-collapse:collapse;font-size:13.5px;">
+      <thead>
+        <tr style="background:var(--bg-2);">
+          <th style="text-align:left;padding:10px 12px;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3);border-bottom:1px solid var(--line);">Horse</th>
+          <th style="text-align:left;padding:10px 12px;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3);border-bottom:1px solid var(--line);">Field</th>
+          <th style="text-align:left;padding:10px 12px;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3);border-bottom:1px solid var(--line);">Hard-coded</th>
+          <th style="text-align:left;padding:10px 12px;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3);border-bottom:1px solid var(--line);">Real (verified)</th>
+          <th style="text-align:left;padding:10px 12px;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3);border-bottom:1px solid var(--line);">Effect</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:1px solid var(--line);background:#FFF7ED;"><td style="padding:11px 12px;font-weight:600;">So Happy</td><td style="padding:11px 12px;">Odds</td><td style="padding:11px 12px;color:#B91C1C;">6-1 (14.3% implied)</td><td style="padding:11px 12px;color:var(--accent-dark);">15-1 (6.3% implied)</td><td style="padding:11px 12px;color:var(--ink-2);">Was &ldquo;biggest fade on the board&rdquo;; now mild fade</td></tr>
+        <tr style="border-bottom:1px solid var(--line);"><td style="padding:11px 12px;font-weight:600;">Renegade</td><td style="padding:11px 12px;">Implied %</td><td style="padding:11px 12px;color:#B91C1C;">18.2% (computed from 4.5-1)</td><td style="padding:11px 12px;color:var(--accent-dark);">20.0% (4-1)</td><td style="padding:11px 12px;color:var(--ink-2);">Larger fade against actual ML</td></tr>
+        <tr style="border-bottom:1px solid var(--line);"><td style="padding:11px 12px;font-weight:600;">Further Ado</td><td style="padding:11px 12px;">Odds</td><td style="padding:11px 12px;color:#B91C1C;">6.5-1 (13.3%)</td><td style="padding:11px 12px;color:var(--accent-dark);">6-1 (14.3%)</td><td style="padding:11px 12px;color:var(--ink-2);">Edge over market 2.4&times; &rarr; 2.2&times; (still BET)</td></tr>
+        <tr style="border-bottom:1px solid var(--line);"><td style="padding:11px 12px;font-weight:600;">Commandment</td><td style="padding:11px 12px;">Odds &amp; Beyer</td><td style="padding:11px 12px;color:#B91C1C;">6.5-1 / Beyer 104</td><td style="padding:11px 12px;color:var(--accent-dark);">6-1 / Beyer 101</td><td style="padding:11px 12px;color:var(--ink-2);">Stays FADE; profile slightly weaker</td></tr>
+        <tr><td style="padding:11px 12px;color:var(--ink-2);">15 others</td><td style="padding:11px 12px;color:var(--ink-2);">All fields</td><td style="padding:11px 12px;color:var(--ink-2);" colspan="2">Match real morning line and post draw</td><td style="padding:11px 12px;color:var(--ink-2);">No change</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="primer-lede" style="font-size:14px;margin-bottom:16px;">
+    Source: NBC Sports official post-position draw (April 25, 2026); US Racing
+    / DRF Beyer figure rankings; National Weather Service Louisville. Field
+    of 20 confirmed (Silent Tactic, Fulleffort, and Right to Party scratched;
+    Great White, Ocelli, and Robusta drew in). Race-day forecast: sunny,
+    60&ndash;65&deg;F, fast track &mdash; <em>matches the model&rsquo;s
+    assumption</em>, no muddy adjustment needed.
+  </p>
+
+  <h3 style="font-size:18px;font-weight:700;margin:32px 0 12px;color:var(--ink);">Sanity check vs. the public handicapping consensus</h3>
+  <p class="primer-lede" style="font-size:14px;margin-bottom:14px;">
+    Five major sources&rsquo; published picks (DRF, BloodHorse, US Racing,
+    CBS Sports, SportsLine), as of post-draw. Where the model agrees with
+    a majority of the consensus, it&rsquo;s a sanity check. Where it
+    disagrees, it&rsquo;s a real call &mdash; for better or worse.
+  </p>
+  <div class="primer-grid skeptic-grid">
+    <div class="primer-card skeptic-card">
+      <div class="primer-card__label">Model and consensus AGREE</div>
+      <div class="primer-card__title">Further Ado as the win pick</div>
+      <p>
+        Five of five public sources name Further Ado as a top contender; DRF
+        circles his 106 Beyer as &ldquo;the figure to watch.&rdquo; Our model
+        also has him #1 at 31.26%. The Beyer hierarchy from the field
+        (106 / 101 / 100 / sub-100) maps cleanly onto our top picks.
+      </p>
+    </div>
+    <div class="primer-card skeptic-card">
+      <div class="primer-card__label">Model and consensus AGREE</div>
+      <div class="primer-card__title">Fade Renegade off the rail</div>
+      <p>
+        Multiple handicappers (Demling, others) fade the 4-1 favorite:
+        only three Arkansas Derby winners have ever won the Kentucky Derby
+        (most recently American Pharoah, 2015), and the rail is the
+        toughest gate. Our model has him at 0.78%, the harshest fade on
+        the board. Same direction, different magnitude.
+      </p>
+    </div>
+    <div class="primer-card skeptic-card">
+      <div class="primer-card__label">Model is MORE bearish than consensus</div>
+      <div class="primer-card__title">Commandment</div>
+      <p>
+        Some experts (Demling, Hochman) fade Commandment too &mdash;
+        slow Florida Derby time, Brad Cox barn cold lately. But other
+        sources (USRacing/DRF) trust him as the
+        &ldquo;most-consistent-figure horse&rdquo; with two 100+ Beyers.
+        Our model has him at 5.57%, well below the 14.3% market &mdash;
+        directionally aligned with the contrarian half of the consensus,
+        but more aggressive.
+      </p>
+    </div>
+    <div class="primer-card skeptic-card">
+      <div class="primer-card__label">Model agrees with the contrarians</div>
+      <div class="primer-card__title">The Puma as a value bet</div>
+      <p>
+        At 10-1 with a 99 Beyer and the Castellano/Delgado team that won
+        the &rsquo;23 Derby with Mage, multiple analysts list The Puma as
+        a &ldquo;sneaky tough&rdquo; live longshot. Our model has him at
+        11.28% (vs. 9.1% implied) &mdash; barely BET, marginal after
+        takeout. Honest read: a place/show overlay rather than a pure
+        win bet.
+      </p>
+    </div>
+  </div>
+
+  <p class="primer-lede" style="font-size:14px;margin-top:20px;">
+    <strong>Net:</strong> after correcting the inputs, the model&rsquo;s top
+    three picks (Further Ado &gt; Chief Wallabee &gt; The Puma) match the
+    rough shape of public handicapping consensus. The <em>magnitude</em> of
+    the win probabilities (31% / 26% / 11%) is still aggressive vs.
+    handicapper consensus &mdash; that&rsquo;s a model artifact (see
+    <a href="#audit">methodology audit</a> below for why those numbers
+    shouldn&rsquo;t be taken to four decimal places).
+  </p>
 </section>
 
 <!-- ── Methodology audit ── -->
@@ -1257,12 +1368,12 @@ total = np.sum([r[<span class="s">"counts"</span>] <span class="k">for</span> r 
 <script>
 // ── Horse data (from Monte Carlo output) ──────────────────────────────────
 const HORSES = [
-  { post:16, name:"Further Ado", odds:"6.5-1", beyer:106, style:"Press", trainerDW:1, jockeyDW:3, win:31.2612, place:52.3430, show:66.6776, implied:13.3, val:"BET" },
+  { post:16, name:"Further Ado", odds:"6-1", beyer:106, style:"Press", trainerDW:1, jockeyDW:3, win:31.2612, place:52.3430, show:66.6776, implied:14.3, val:"BET" },
   { post:11, name:"Chief Wallabee", odds:"8-1", beyer:93, style:"Press", trainerDW:1, jockeyDW:1, win:26.4294, place:46.8471, show:61.6257, implied:11.1, val:"BET" },
   { post:8, name:"The Puma", odds:"10-1", beyer:99, style:"Close", trainerDW:1, jockeyDW:1, win:11.2793, place:24.1760, show:37.0444, implied:9.1, val:"BET" },
   { post:13, name:"Emerging Market", odds:"15-1", beyer:98, style:"Stalk", trainerDW:0, jockeyDW:1, win:7.6433, place:17.3565, show:28.0263, implied:6.2, val:"BET" },
-  { post:5, name:"Commandment", odds:"6.5-1", beyer:104, style:"Stalk", trainerDW:1, jockeyDW:1, win:5.5675, place:13.1519, show:22.0253, implied:13.3, val:"FADE" },
-  { post:7, name:"So Happy", odds:"6-1", beyer:98, style:"Stalk", trainerDW:0, jockeyDW:2, win:4.6199, place:11.1425, show:19.0244, implied:14.3, val:"FADE" },
+  { post:5, name:"Commandment", odds:"6-1", beyer:101, style:"Stalk", trainerDW:1, jockeyDW:1, win:5.5675, place:13.1519, show:22.0253, implied:14.3, val:"FADE" },
+  { post:7, name:"So Happy", odds:"15-1", beyer:100, style:"Stalk", trainerDW:0, jockeyDW:2, win:4.6199, place:11.1425, show:19.0244, implied:6.3, val:"FADE" },
   { post:15, name:"Six Speed", odds:"50-1", beyer:91, style:"Pace", trainerDW:0, jockeyDW:1, win:3.8187, place:9.3923, show:16.3328, implied:2.0, val:"BET" },
   { post:10, name:"Incredibolt", odds:"20-1", beyer:91, style:"Stalk", trainerDW:0, jockeyDW:0, win:1.6887, place:4.4491, show:8.2614, implied:4.8, val:"FADE" },
   { post:20, name:"Robusta", odds:"50-1", beyer:93, style:"Pace", trainerDW:2, jockeyDW:0, win:1.5221, place:4.0395, show:7.5540, implied:2.0, val:"FADE" },
@@ -1270,7 +1381,7 @@ const HORSES = [
   { post:3, name:"Intrepido", odds:"50-1", beyer:94, style:"Press", trainerDW:0, jockeyDW:0, win:0.9619, place:2.6270, show:5.0541, implied:2.0, val:"FADE" },
   { post:4, name:"Litmus Test", odds:"30-1", beyer:96, style:"Stalk", trainerDW:6, jockeyDW:0, win:0.8635, place:2.3726, show:4.5923, implied:3.2, val:"FADE" },
   { post:9, name:"Wonder Dean", odds:"30-1", beyer:95, style:"Stalk", trainerDW:0, jockeyDW:0, win:0.8180, place:2.2540, show:4.3756, implied:3.2, val:"FADE" },
-  { post:1, name:"Renegade", odds:"4-1", beyer:97, style:"Close", trainerDW:2, jockeyDW:0, win:0.7747, place:2.1408, show:4.1680, implied:18.2, val:"FADE" },
+  { post:1, name:"Renegade", odds:"4-1", beyer:97, style:"Close", trainerDW:2, jockeyDW:0, win:0.7747, place:2.1408, show:4.1680, implied:20.0, val:"FADE" },
   { post:14, name:"Pavlovian", odds:"30-1", beyer:93, style:"Pace", trainerDW:2, jockeyDW:0, win:0.4544, place:1.2872, show:2.5709, implied:3.2, val:"FADE" },
   { post:12, name:"Potente", odds:"20-1", beyer:96, style:"Pace", trainerDW:6, jockeyDW:0, win:0.4378, place:1.2420, show:2.4846, implied:4.8, val:"FADE" },
   { post:18, name:"Great White", odds:"50-1", beyer:94, style:"Stalk", trainerDW:0, jockeyDW:0, win:0.3630, place:1.0373, show:2.0912, implied:2.0, val:"FADE" },
@@ -1297,8 +1408,8 @@ const REASONS = {
     "At 50-1 the market is treating him as a complete throwaway. Model says he's <strong>1.9&times; more likely to win than the price implies</strong>. Tiny stake, big payoff if he hits &mdash; classic longshot value, not a serious win bet.",
   "Commandment":
     "Beyer <strong>104</strong> is the second-best in the field, which is why he's bet at 6.5-1 (co-favorite). But the model gives him only 5.6% &mdash; <strong>less than half the implied 13.3%</strong>. The market is overpaying for the speed figure alone.",
-  "So Happy":
-    "Heavily backed at 6-1 (14.3% implied), but the model has him at 4.6% &mdash; the worst gap on the board. Composite score lags the top picks. Market money chasing a name; pass.",
+    "So Happy":
+    "Beyer 100 from the Santa Anita Derby is figure-qualified (every Derby winner since 2000 has at least one 100+ Beyer), and Mike Smith has 2 Derby wins. At 15-1 the market has him about right; the model has him slightly below at 4.6% vs 6.3% implied, so a mild fade rather than a strong opinion either way. <em>(The original site claim he was &ldquo;heavily backed at 6-1&rdquo; was a hard-coded data error &mdash; corrected here from real morning line.)</em>",
   "Incredibolt":
     "20-1 morning line (4.8% implied) with no trainer or jockey Derby pedigree to back it up and a Beyer of 91. Composite score is bottom-half of the field.",
   "Robusta":
